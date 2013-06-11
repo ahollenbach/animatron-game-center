@@ -1,0 +1,119 @@
+html {
+	background-color: #F6F6F6;
+}
+body {
+	text-align:center;
+	margin:50px 0px; padding:0px;
+}
+h1 {
+	color: #111;
+}
+#content {
+	min-width: 500px;
+	width: 75%;
+	margin:0px auto;
+}
+
+/**LOGIN**/
+#login {
+	margin: 100px;
+}
+
+
+
+#lobby {
+	min-width: 600px;
+	margin: 0 auto;
+}
+.balance {
+	display: inline-block;
+}
+
+/**USER LIST**/
+#user-list {
+	width: 300px;
+	height:300px;
+	vertical-align: top;
+	/*n e s w*/
+	margin: 0 2px 0 auto;
+}
+#user-list ul {
+	padding: 0px 0px;
+	margin: 0px auto;
+	overflow-y: scroll;
+	height:100%;
+}
+.user {
+	list-style-type: none;
+	padding: 10px 5px;
+	color:#343434;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	margin:0px 3px 0px 0;
+	background-color:#F6F6F6;
+	cursor: pointer;
+	border-bottom: 1px solid #999;
+}
+.user.firstElem {
+	border-top: 1px solid #999;
+}
+.user:hover {
+	background-color:#CCC;
+}
+
+/**MESSAGING**/
+#message-box {
+	width: 500px;
+	margin: 0 auto 0 2px;
+}
+#message-box textarea {
+	width: 100%;
+	height: 250px;
+	resize: none;
+}
+#input-message {
+	width: 100%;
+}
+.helper-text {
+	font-size: .7em;
+	color: #444444;
+}
+
+/**NETWORK BAR**/
+#network-bar {
+	text-align: center;
+	margin:5px auto;
+	width:800px;
+}
+#network-bar div.nametag {
+	padding:15px 50px;
+	color: #F1F1F1;
+	width:150px;
+}
+#network-bar div#ping {
+	width:100px;
+}
+#network-bar div {
+	display: inline-block;
+	font-size: 20px;
+	margin:5px 0px;
+}
+#player1 {
+	background-color:#BB0000;
+}
+#player2 {
+	background-color:#0088BB;
+}
+
+/**GAME**/
+#game {
+	margin: 0 auto;
+}
+#game-canvas {
+	height: 450px;
+	width: 800px;
+	border: 1px solid #000;
+	cursor: default;
+	background-color: #FFF;
+}
