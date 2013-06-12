@@ -1,4 +1,5 @@
-var GameCenter.Router = Backbone.Router.extend({
+define(['jquery', 'underscore', 'backbone'], function ($, _, Backbone) {
+var Router = Backbone.Router.extend({
     routes : {
 
         ''         : 'index'
@@ -12,4 +13,7 @@ var GameCenter.Router = Backbone.Router.extend({
     game   : function(id){
         // load game element
     },
+});
+
+return Router;
 });

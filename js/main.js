@@ -1,14 +1,24 @@
 require.config({
-    // establish short aliases for global requirements
-    paths : {
-        j : 'libs/jquery-1.9.1',      // JQuery
-        u : 'libs/underscore-1.4.4',  // Underscore (modified for AMD)
-        b : 'libs/backbone-1.0.0'     // Backbone   (modified for AMD)
+    baseUrl: "/js/",
+    paths: {
+        jquery     : 'libs/jquery-1.9.1',
+        underscore : 'libs/underscore-1.4.4',
+        backbone   : 'libs/backbone-1.0.0'
+    },
+    shim: {
+        underscore: {
+            exports : '_'
+        },
+        backbone: {
+            deps    : ["underscore", "jquery"],
+            exports : "Backbone"
+        }
     }
 });
 
 require([ 
     'GameCenter',
 ], function(GameCenter) {
-    GameCenter.initialize();
+    var gameCenter = new GameCenter;
+    Backbone.history.start();
 });

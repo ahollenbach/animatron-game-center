@@ -1,13 +1,15 @@
-(function(){ // setting up custom namespace
+define(['jquery', 'underscore', 'backbone', 'Router'], function ($, _, Backbone, Router) {
 
-window.GameCenter = {
+Router.initialize();
+
+var GameCenter = {
     Models: {},
     Collections: {},
     Views: {}
 };
 
 // To use later, with external template files
-window.template = function(id){
+template = function(id){
     return _.template( $('#'   id).html());
 };
 
@@ -38,4 +40,5 @@ var gameCollection = new GameCenter.Collections.Games([
 var gamesView = new GameCenter.Views.Games({ collection : gameCollection});
 $(document.body).append(gamesView.el);
 
-})();
+return GameCenter;
+});
