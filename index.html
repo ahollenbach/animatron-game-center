@@ -1,66 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Animatron Game Center</title>
-<meta name="description" content="The animatron game center.">
-  <link rel="stylesheet" href="css/normalize.css">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/lobby.css">
-  <link rel="stylesheet" href="css/scrollbar.css">
+    <title>Animatron Games</title>
+    <meta charset="utf-8">
+
+    <script data-main="js/main" src="js/libs/require-2.1.6.js"></script>
 </head>
+
 <body>
-  <script type="text/x-handlebars">
-    {{outlet}}
-  </script>
-
-  <script type="text/x-handlebars" data-template-name="login">
-    <div id="login">
-        <h1>Animatron Games</h1>
-        <div class="login">
-          <input type="text" name="username">
-          <button name="login" {{action loginUser}}>Login</button>
-        </div>
-        <div class="or">or</div>
-        <div class="login">
-          {{#linkTo 'lobby'}}<input type="submit" value="Login as Guest">{{/linkTo}}
-        </div>
-    </div>
-  </script>
-
-  <script type="text/x-handlebars" data-template-name="lobby">
-    <div id="lobby">
-        <h1>Animatron Games</h1>
-        <div id="user-list" class="balance"></div>
-        <div id="message-box" class="balance">
-            <textarea id="messages" class="scroll" name="chat-log" readonly></textarea>
-            <input type="text" id="input-message" />
-            <p class="helper-text">Press enter to send a message.</p>
-        </div>
-    </div>
-  </script>
-
-  <script type="text/x-handlebars" data-template-name="game">
-    <div id="game">
-        <div id="network-bar">
-            <div id="ping"><span id="pingNum">0</span>ms</div>
-        </div>
-        <canvas id="game-canvas" data-title="game-canvas"></canvas>
-    </div>
-  </script>
-
-  <script src="js/libs/jquery-1.9.1.js"></script>
-  <script src="js/libs/handlebars-1.0.0-rc.4.js"></script>
-  <script src="js/libs/ember-1.0.0-rc.5.js"></script>
-  <script src="js/libs/ember-data-0.13.min.js"></script>
-  <script src="js/libs/hardcore.js"></script>
-  <script src="js/connection.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/controllers/loginController.js"></script>
-
-  <script src="js/libs/date.format.js"></script>
-  <script src="js/chat_client.js"></script>
-  <script src="js/node_modules/message.js"></script>
 
 </body>
 </html>
