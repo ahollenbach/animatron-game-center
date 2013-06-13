@@ -17,6 +17,6 @@ require.config({
 });
 
 require([ 'GameCenter' ], function(GameCenter) {
-    var gameCenter = new GameCenter;
+    var gameCenter = GameCenter;
     Backbone.history.start();
 });

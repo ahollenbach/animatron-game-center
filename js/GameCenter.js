@@ -1,8 +1,6 @@
 define(['jquery', 'underscore', 'backbone', 
-    'Router', 
-    'js/collections/GamesCollection.js',
-    'js/views/GamesView.js'], 
-function ($, _, Backbone, Router, GamesCollection, GamesView) {
+    'Router' ],
+function ($, _, Backbone, Router) {
 
 //Router.initialize();
 
@@ -17,8 +15,10 @@ GameCenter.template = function(id){
     return _.template( $('#'+id).html());
 };
 
-// Test data
-var gameCollection = new GameCenter.Collections.Games([
+
+// require stuff and do it
+require([ 'collections/GamesCollection', 'views/GamesView' ], function(GamesCollection, GamesView) {
+    var gameCollection = new GameCenter.Collections.Games([
     {
         name         : 'Pong',
         developers   : 'Atari',
@@ -33,11 +33,12 @@ var gameCollection = new GameCenter.Collections.Games([
         singlePlayer : true,
         multiPlayer  : false
     }
-]);
+    ]);
 
-GameCenter.Views.Games = GamesView;
-var gamesView = new GameCenter.Views.Games({ collection : gameCollection});
-$(document.body).append(gamesView.el);
+    var gamesView = new GameCenter.Views.Games({ collection : gameCollection});
+    $(document.body).append(gamesView.el);
+});
+
 
 return GameCenter;
 

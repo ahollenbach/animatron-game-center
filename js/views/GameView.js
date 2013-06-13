@@ -1,6 +1,9 @@
-define(['jquery', 'underscore', 'backbone'], function ($, _, Backbone) {
+define(['jquery', 'underscore', 'backbone', 
+    'models/GameModel',
+    'GameCenter'], 
+function ($, _, Backbone, Game, GameCenter) {
 
-var GameView = Backbone.View.extend({
+GameCenter.Views.Game = Backbone.View.extend({
     tagName     : 'li',
     className   : 'game',
     nameTemplate: _.template("<b>Name: </b><%= name %>"),
@@ -23,6 +26,5 @@ var GameView = Backbone.View.extend({
         // TODO: handle click
     } 
 });
-return GameView;
 
 });
