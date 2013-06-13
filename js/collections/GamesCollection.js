@@ -2,8 +2,8 @@ define(['jquery', 'underscore', 'backbone',
     'models/GameModel', 
     'GameCenter'], 
 function ($, _, Backbone, Game, GameCenter) {
-    
-GameCenter.Collections.Games =  Backbone.Collection.extend({
+
+var GamesCollection =  Backbone.Collection.extend({
     model        : Game,
 
     singlePlayer : function() {
