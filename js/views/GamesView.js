@@ -1,3 +1,5 @@
+define(['jquery', 'underscore', 'backbone', 'views/GameView'], function ($, _, Backbone, GameView) {
+
 var GamesView = Backbone.View.extend({
     tagName    : 'ul',
 
@@ -10,4 +12,7 @@ var GamesView = Backbone.View.extend({
             this.$el.append(gameView.el);
         }, this);
     }
+});
+return GamesView;
+
 });

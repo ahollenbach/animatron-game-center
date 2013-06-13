@@ -1,3 +1,5 @@
+define(['jquery', 'underscore', 'backbone'], function ($, _, Backbone) {
+
 var Game = Backbone.Model.extend({
     initialize : function() {
         // do something
@@ -10,4 +12,7 @@ var Game = Backbone.Model.extend({
         singlePlayer : true,
         multiPlayer  : true
     }
+});
+return Game;
+
 });

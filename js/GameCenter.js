@@ -1,6 +1,10 @@
-define(['jquery', 'underscore', 'backbone', 'Router'], function ($, _, Backbone, Router) {
+define(['jquery', 'underscore', 'backbone', 
+    'Router', 
+    'js/collections/GamesCollection.js',
+    'js/views/GamesView.js'], 
+function ($, _, Backbone, Router, GamesCollection, GamesView) {
 
-Router.initialize();
+//Router.initialize();
 
 var GameCenter = {
     Models: {},
@@ -9,15 +13,9 @@ var GameCenter = {
 };
 
 // To use later, with external template files
-template = function(id){
-    return _.template( $('#'   id).html());
+GameCenter.template = function(id){
+    return _.template( $('#'+id).html());
 };
-
-GameCenter.Models.Game;
-GameCenter.Views.Game;
-
-GameCenter.Collections.Games;
-GameCenter.Views.Games;
 
 // Test data
 var gameCollection = new GameCenter.Collections.Games([
@@ -37,8 +35,10 @@ var gameCollection = new GameCenter.Collections.Games([
     }
 ]);
 
+GameCenter.Views.Games = GamesView;
 var gamesView = new GameCenter.Views.Games({ collection : gameCollection});
 $(document.body).append(gamesView.el);
 
 return GameCenter;
+
 });

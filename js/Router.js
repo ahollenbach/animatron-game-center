@@ -1,8 +1,9 @@
 define(['jquery', 'underscore', 'backbone'], function ($, _, Backbone) {
+
 var Router = Backbone.Router.extend({
     routes : {
 
-        ''         : 'index'
+        ''         : 'index',
         'game/:id' : 'game'
 
     },
@@ -14,6 +15,6 @@ var Router = Backbone.Router.extend({
         // load game element
     },
 });
-
 return Router;
+
 });

@@ -1,3 +1,5 @@
+define(['jquery', 'underscore', 'backbone'], function ($, _, Backbone) {
+
 var GameView = Backbone.View.extend({
     tagName     : 'li',
     className   : 'game',
@@ -20,4 +22,7 @@ var GameView = Backbone.View.extend({
     enterGame : function() {
         // TODO: handle click
     } 
-})
+});
+return GameView;
+
+});
