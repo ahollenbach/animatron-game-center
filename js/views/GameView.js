@@ -1,30 +1,35 @@
-define(['jquery', 'underscore', 'backbone', 
-    'models/GameModel',
-    'GameCenter'], 
-function ($, _, Backbone, Game, GameCenter) {
+define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
+    var GameView = Backbone.View.extend({
+        // Tag definition
+        tagName : 'li',
+            className : 'game',
 
-GameCenter.Views.Game = Backbone.View.extend({
-    tagName     : 'li',
-    className   : 'game',
-    nameTemplate: _.template("<b>Name: </b><%= name %>"),
+        // Template definition
+        nameTemplate : Handlebars.compile(getTemplate("game-template")),
 
+        // Function overrides
+        initialize : function(args) {
+            //_.bindAll(this, 'changeName');
+            //this.model.bind('change:name', this.changeName);
+            // binds so changeName is called when model changes
+            console.log("bitches and hos");
+        },
+        render : function() {
+            this.$el.html(this.nameTemplate(this.model.toJSON()));
+            console.log("sup", this.el);
+            // TODO: hash this out a bit more
+            return this;
+        },
 
-    initialize  : function(args) {
-        //_.bindAll(this, 'changeName');
-        //this.model.bind('change:name', this.changeName);
-        // binds so changeName is called when model changes
-        this.render();
-    },
-    render      : function() {
-        this.$el.html(this.nameTemplate(this.model.toJSON()));
-        // TODO: hash this out a bit more
-    },
-    events      : {
-        'click' : 'enterGame'
-    },
-    enterGame : function() {
-        // TODO: handle click
-    } 
-});
+        // Event definitions and handlers
+        events : {
+            'click' : 'enterGame'
+        },
+        enterGame : function() {
+            // TODO: handle click
+            console.log(this.model.get('name') + " was clicked.");
+        } 
+    });
 
+    return GameView;
 });
