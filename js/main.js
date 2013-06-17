@@ -48,6 +48,8 @@ function getTemplate(id) {
     return $("#" + id).html();
 }
 
+var g;
+
 //var gamesView = new GameCenter.Views.Games({ collection : gameCollection});
 //$(document.body).append(gamesView.el);
 
@@ -59,7 +61,7 @@ require(
   ],
   function($, _, Backbone, GalleryView) {
      $(function() {
-      new GalleryView(games);
+      g = new GalleryView(games);
     });
 
     //var gameCenter = GameCenter;
