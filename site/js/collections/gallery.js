@@ -1,16 +1,8 @@
 define(['backbone', 'models/game'], function (Backbone, Game, GameView) {
     var Gallery = Backbone.Collection.extend({
         // Model definition
-        model : Game, 
-
-        initialize : function() {
-            // this.on("add", function() {
-            //     console.log("before: ", games);
-            //     games = this.models;
-            //     console.log("after: ", games);
-            // }, this);
-        },
-
+        model : Game,
+        
         // Helper functions
         getSinglePlayerGames : function() {
             return this.filter(function(game) {

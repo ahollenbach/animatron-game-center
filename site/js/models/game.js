@@ -7,11 +7,6 @@ define(['backbone'], function (Backbone) {
             created      : 2013,
             singlePlayer : true,
             multiPlayer  : true
-        },
-
-        // Function overrides
-        initialize : function() {
-            console.log("hello");
         }
     });
 

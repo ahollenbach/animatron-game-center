@@ -39,16 +39,14 @@ var games = [
     name         : 'Blahdiblah',
     developers   : 'Andrew Hollenbach & Brian Clanton',
     created      : 2013,
-    singlePlayer : true,
-    multiPlayer  : false
+    singlePlayer : false,
+    multiPlayer  : true
 }
 ];
 
 function getTemplate(id) {
     return $("#" + id).html();
 }
-
-var g;
 
 //var gamesView = new GameCenter.Views.Games({ collection : gameCollection});
 //$(document.body).append(gamesView.el);
@@ -61,6 +59,7 @@ require(
   ],
   function($, _, Backbone, GalleryView) {
      $(function() {
+<<<<<<< HEAD:js/main.js
         $(document).ready(function() {
             const EASE_LEN = 200, EASING = "linear";
             const widths = [ 100, 35, 25 ]; // size of the smallest non-zero element
@@ -138,6 +137,9 @@ require(
         });
 
       g = new GalleryView(games);
+=======
+      new GalleryView(games);
+>>>>>>> develop:site/js/main.js
     });
 
     //var gameCenter = GameCenter;

@@ -12,11 +12,9 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
             //_.bindAll(this, 'changeName');
             //this.model.bind('change:name', this.changeName);
             // binds so changeName is called when model changes
-            console.log("bitches and hos");
         },
         render : function() {
             this.$el.html(this.nameTemplate(this.model.toJSON()));
-            console.log("sup", this.el);
             // TODO: hash this out a bit more
             return this;
         },
