@@ -1,0 +1,17 @@
+/*only works for webkit, temporary solution to stock windows scroll being ugly*/
+
+.scroll::-webkit-scrollbar {
+    width: 12px;
+    padding: 2px;
+}
+.scroll::-webkit-scrollbar-track {
+    /*border: 1px solid #AAA;*/
+    background-color: #DDD;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+}
+.scroll::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    background: #444;
+}

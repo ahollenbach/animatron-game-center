@@ -1,0 +1,30 @@
+=====================
+STRUCTURE
+=====================
+baseUrl = "/js/"
+
+[main]                              main.js
+
+--Application--
+GameCenter                          GameCenter.js
+Router                              Router.js
+
+--Models--
+GameCenter.Models.Game              models/GameModel.js
+GameCenter.Models.User              models/UserModel.js
+GameCenter.Models.Session           models/SessionModel.js
+
+--Collections--
+GameCenter.Collections.Games;       collections/GamesCollection.js
+GameCenter.Collections.Users;       collections/UsersCollection.js
+
+--Views--
+GameCenter.Views.Game;              views/GameView.js
+GameCenter.Views.Games;             views/GamesView.js
+GameCenter.Views.User;              views/UserView.js
+GameCenter.Views.Users;             views/UsersView.js
+GameCenter.Views.Session;           views/SessionView.js
+GameCenter.Views.Chat;              views/ChatView.js
+
+
+*Much more needs to be added, but we can do that as we go*
