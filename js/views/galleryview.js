@@ -9,10 +9,7 @@ var GalleryView = Backbone.View.extend({
 
     // Function overrides
     initialize : function(games) {
-        // console.log(games);
         this.collection = new Gallery(games);
-        // console.log(this.collection);
-        // console.log(this.collection.models.length);
         this.render();
     },
     render : function() {

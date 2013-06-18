@@ -65,7 +65,7 @@ require(
             const EASE_LEN = 200, EASING = "linear";
             const widths = [ 100, 35, 25 ]; // size of the smallest non-zero element
             
-            $(".bar.left").width("100%"); $(".dropdown").height("0%");
+            $(".dropdown").height("100%");
 
             $(".bar").on("click", function(evt) {
                 setWidths(this);
@@ -124,13 +124,17 @@ require(
                 var userElems = $('.user');
                 for (var i = 0; i < userElems.length; i++) {
                     var user = $(userElems[i]);
-                    attachListener(user);
                 }
             }
 
             function makeUser(user,firstElem) {
                 return "<li id=\"" + user + "\" class=\"user" + (firstElem?" firstElem":"") + "\">" + user + "</li>";
             }
+
+            $(".user").click(function() {
+                console.log(this);
+                $(this).toggleClass("selected");
+            })
         });
 
       g = new GalleryView(games);

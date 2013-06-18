@@ -27,6 +27,7 @@ html, body {
 
 .bar.left {
     background-color: #75C6D1;
+    width: 100%;
 }
 .bar.middle {
     background-color: #A3E0E0;
@@ -53,6 +54,7 @@ html, body {
     background-color: #0B1522;
     position: absolute;
     width:100%;
+    height: 0%;
     text-align: center;
     overflow: hidden;
     z-index: 1;
@@ -69,7 +71,7 @@ html, body {
     color: #DDD;
     position: absolute;
     padding: 10px 30px;
-    margin-left: 10px;
+    right:10px;
     text-align: center;
     z-index: 1;
     font-weight: bold;
@@ -135,12 +137,11 @@ span.extra {
 }
 
 /**USER LIST**/
-#user-list {
+ul#user-list  {
     vertical-align: top;
     /*n e s w*/
     margin: 0 auto;
-}
-#user-list ul {
+
     padding: 0px 0px;
     margin: 0px auto;
     overflow-y: auto;
@@ -164,4 +165,8 @@ span.extra {
 }
 .user:hover {
     background-color:#CCC;
+}
+.user.selected {
+    color: #F3F3F3;
+    background-color: #0B1522;
 }
