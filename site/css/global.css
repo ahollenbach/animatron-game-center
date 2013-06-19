@@ -6,6 +6,7 @@ html, body {
 
     color: #F9F9F9;
     font-family: sans-serif;
+    overflow: hidden;
 }
 
 #bars {
@@ -66,12 +67,18 @@ html, body {
     height:0%;
 }
 
-.dropdownToggle {
+#dropdownToggle {
+    right:10px;
+}
+#chatToggle {
+    bottom:0px;
+    right:10px;
+}
+.toggle {
     background-color: #0B1522;
     color: #DDD;
     position: absolute;
     padding: 10px 30px;
-    right:10px;
     text-align: center;
     z-index: 10;
     font-weight: bold;
@@ -83,7 +90,7 @@ html, body {
     -ms-user-select: none;
     user-select: none;
 }
-.dropdownToggle:hover {
+.toggle:hover {
     cursor:pointer;
     color: #F9F9F9;
 }
@@ -187,4 +194,27 @@ ul#user-list  {
     vertical-align: top;
     text-align: center;
     z-index: 1;
+}
+
+/**MESSAGING**/
+#message-box {
+    width: 500px;
+    margin: 0 auto;
+    position: absolute;
+    bottom: 0px;
+    right: 150px;
+    background-color: #EEE;
+    text-align: center;
+}
+#message-box textarea {
+    width: 90%;
+    height: 250px;
+    resize: none;
+}
+#input-message {
+    width: 90%;
+}
+.helper-text {
+    font-size: .7em;
+    color: #444444;
 }

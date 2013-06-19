@@ -44,25 +44,30 @@ function (Backbone, Handlebars, GalleryView, UserListView, SettingsView, Session
                 active.animate({width: 100-(widths[visibleBars-1]*(visibleBars-1)) + "%"},EASE_LEN, EASING);
             }
 
-            //=================================================================
-            // Dropdown menu
-            //=================================================================
-
-            $(".dropdownToggle").on("click", function(evt) {
-                var dropdown = $(".dropdown");
-                if     (dropdown.hasClass("inactive")) dropdown.removeClass("inactive").addClass("active")  .animate({height: "40%"}, EASE_LEN, EASING);
-                else if(dropdown.hasClass("active"))   dropdown.removeClass("active")  .addClass("inactive").animate({height: "0%" }, EASE_LEN, EASING);
-            });
-
             // Start with gallery of games
             new GalleryView();
         },
 
         // Event definitions and handlers
         events : {
+            'click #dropdownToggle' : 'toggleDropdown',
+            'click #chatToggle'     : 'toggleChat',
+
             'gameSelectEvent' : 'setGame',
             'gameLaunchEvent' : 'launchGame'
         },
+        toggleDropdown: function(evt) {
+            var dropdown = $(".dropdown");
+            if     (dropdown.hasClass("inactive")) dropdown.removeClass("inactive").addClass("active")  .animate({height: "40%"}, EASE_LEN, EASING);
+            else if(dropdown.hasClass("active"))   dropdown.removeClass("active")  .addClass("inactive").animate({height: "0%" }, EASE_LEN, EASING);
+        },
+        toggleChat: function(evt) {
+            var chat = $("#message-box");
+            if     (chat.hasClass("inactive")) chat.removeClass("inactive").addClass("active")  .animate({height: "350"}, EASE_LEN, EASING);
+            else if(chat.hasClass("active"))   chat.removeClass("active")  .addClass("inactive").animate({height: "0" }, EASE_LEN, EASING);
+        },
+
+
         setGame : function(evt, model) {
             // Check if multiplayer
             new UserListView();
