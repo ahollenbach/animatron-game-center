@@ -5,7 +5,9 @@ var application_root = __dirname,
     mongoose = require( 'mongoose' ); //MongoDB integration
 
 // Create server
-var app = express();
+var app = express(),
+    server = require('http').createServer(app),
+    io = require('socket.io').listen(server);
 
 // Connect to database
 mongoose.connect('mongodb://localhost/gamecenter');
@@ -47,11 +49,10 @@ app.configure( function() {
 });
 
 //Start server
-var port = 1337;
-app.listen( port, function() {
-    console.log( 'Express server listening on port %d in %s mode', port, app.settings.env );
-});
+server.listen(80);
+console.log("Server started");
 
+// RESTful API
 app.get('/api', function(request, response) {
     response.send("Server online.");
 });
@@ -99,9 +100,60 @@ app.put('/api/users/:id', function(request, response) {
             else
                 console.log(error);
 
-            // TODO: Broadcast that user's in game status has changed
-
             return response.send(user);
         });
+    });
+});
+
+//=============================================================================
+// Socket.io Implementation
+//
+// As a convention, I am use single quotes for event types and double quotes
+// for any other type of string
+//=============================================================================
+var chat = io.of("/chat"),
+    invite = io.of("/invite"),
+    game = io.of("/game");
+
+// Chat namespace
+chat.on('connection', function(socket) {
+    console.log("### received a connection to chat");
+
+    socket.on('connection_success', function(username) {
+        console.log(username + " has connected to the server.");
+
+        // Create the socket so that messages can be directed to it from other
+        // sockets by username.
+        socket.join(username);
+
+        socket.set("username", username, function() {
+             socket.broadcast.emit('user_connected', username);
+        });      
+    });
+
+    socket.on('message', function(message) {
+        socket.get("username", function(error, username) {
+            var time = (new Date()).getTime();
+
+            socket.emit('message', time, 'Me', message);
+            socket.broadcast.emit('message', time, username, message);
+        });
+    });
+});
+
+// Invite namespace
+invite.on('connection', function(socket) {
+    socket.on('send', function(invitee, gameName) {
+        socket.get("username", function(error, inviter) {
+            io.of("/chat").in(username).emit('received', inviter, gameName);
+        });
+    });
+
+    socket.on('accept', function(inviter, gameName) {
+        // TODO: Add bot users to a room of some sort
+    });
+
+    socket.on('decline', function(invitee, gameName) {
+        // TODO: Allow user to invite another user        
     });
 });
