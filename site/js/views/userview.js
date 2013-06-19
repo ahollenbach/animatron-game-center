@@ -9,7 +9,7 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
 
         // Function overrides
         initialize : function(args) {
-
+            this.listenTo(this.model, 'change', this.render);
         },
         render : function() {
             var json = this.model.toJSON();
@@ -22,6 +22,7 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
             'click' : 'invite'
         },
         invite : function() {
+            this.$el.toggleClass("selected");
             console.log(this.model.get('username') + " was clicked.");
         } 
     });

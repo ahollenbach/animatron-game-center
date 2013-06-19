@@ -8,7 +8,7 @@ var application_root = __dirname,
 var app = express();
 
 // Connect to database
-mongoose.connect('mongodb://localhost/gamecenter');
+mongoose.connect('mongodb://192.168.40.73:27017/gamecenter');
 
 // Define schemas
 var Game = new mongoose.Schema({

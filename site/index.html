@@ -45,7 +45,19 @@
         </div>
         <div class="bar right">
             <h2>Settings</h2>
+            <div id="settings">
+                <script id="settings-template" type="text/x-handlebars-template">
+                    <button id="start">START</button>
+                </script>
+            </div>
         </div>
+    </div>
+    <div id="session-page">
+        <script id="session-template" type="text/x-handlebars-template">
+            <div id="game">
+                <canvas id="game-canvas" data-title="game-canvas"></canvas>
+            </div>
+        </script>
     </div>
 </body>
 </html>

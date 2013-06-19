@@ -1,4 +1,4 @@
-define(['backbone', 'models/game'], function (Backbone, Game, GameView) {
+define(['backbone', 'models/game'], function (Backbone, Game) {
     var Gallery = Backbone.Collection.extend({
         // Model definition
         model : Game,
