@@ -1,6 +1,5 @@
 // Module dependencies.
-var application_root = __dirname,
-    express = require( 'express' ), //Web framework
+var express = require( 'express' ), //Web framework
     path = require( 'path' ), //Utilities for dealing with file paths
     mongoose = require( 'mongoose' ); //MongoDB integration
 
@@ -44,8 +43,11 @@ app.configure( function() {
     //perform route lookup based on url and HTTP method
     app.use( app.router );
 
+    //Favicon
+    app.use(express.favicon(path.join(__dirname, 'site/assets/animatron_icon.png')));
+
     //Where to serve static content
-    app.use( express.static( path.join( application_root, 'site') ) );
+    app.use( express.static( path.join( __dirname, 'site') ) );
 
     //Show all errors in development
     app.use( express.errorHandler({ dumpExceptions: true, showStack: true }));

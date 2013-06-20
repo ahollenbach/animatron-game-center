@@ -118,6 +118,7 @@ function (Backbone, Handlebars, io, moment, GalleryView, UserListView, SettingsV
             new SettingsView({ model : model });
         },
         launchGame : function(evt, model) {
+            console.log("wazzup");
             new SessionView({ model : model });
 
             $('#session-page').css({'margin-left':window.innerWidth})
