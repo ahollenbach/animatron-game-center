@@ -65,7 +65,10 @@ h1 {
 /**MESSAGING**/
 #message-box {
 	width: 500px;
-	margin: 0 auto 0 2px;
+	margin: 0 auto;
+	position: absolute;
+	bottom: 0px;
+	right: 100px;
 }
 #message-box textarea {
 	width: 100%;

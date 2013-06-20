@@ -11,16 +11,16 @@ var GalleryView = Backbone.View.extend({
     // Function overrides
     initialize : function() {
         this.collection = new Gallery();
-        this.collection.fetch({ reset : true });
+        this.collection.fetch({ url : "/api/games", reset : true });
         this.render();
 
-        this.listenTo(this.collection, 'add', this.renderBook);
+        this.listenTo(this.collection, 'add', this.renderGame);
         this.listenTo(this.collection, 'reset', this.render);
     },
     render : function() {
         this.$el.html("");
         this.collection.each(function(game) {
-           this.renderGame(game);
+            this.renderGame(game);
         }, this);
     },
 

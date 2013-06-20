@@ -4,14 +4,69 @@
     <title>Animatron Games</title>
     <meta charset="utf-8">
 
+    <link rel="stylesheet" href="css/global.css">
+
     <script data-main="js/main" src="js/libs/require-2.1.6.js"></script>
 </head>
 
 <body>
-	<ul id="gallery">
-		<script id="game-template" type="text/x-handlebars-template">
-			<b>Name: </b>{{name}} by {{developers}}
-		</script>
-	</ul>
+    <div class="dropdown active">
+        <h1>Animatron Games</h1>
+        <h4>Login and select a game to get started!</h4>
+        <div id="login">
+            <input type="text" name="username">
+            <input type="submit" value="Login">
+        </div>
+    </div>
+    <div id="dropdownToggle" class="toggle">Home</div>
+
+    <div id="message-box" class="active">
+        <textarea id="messages" class="scroll" name="chat-log" readonly></textarea>
+        <input type="text" id="input-message" />
+        <p class="helper-text">Press enter to send a message.</p>
+    </div>
+    <div id="chatToggle" class="toggle">Chat</div>
+
+    <div id="bars">
+        <div class="bar left visible active">
+            <h2>Select a game</h2>
+            <div id="gallery-container">
+            <ul id="gallery">
+                <script id="game-template" type="text/x-handlebars-template">
+                    <div class='game-info'>
+                      <h4 class='game-title'>{{name}}</h4>
+                      <div class='extra'>
+                        by {{developers}}
+                      </div>
+                    </div>
+                </script>
+            </ul>
+            </div>
+        </div>
+        <div class="bar middle">
+            <h2>Other Players</h2>
+            <ul id="user-list">
+                <script id="user-template" type="text/x-handlebars-template">
+                    {{username}}
+                </script>
+            </ul>
+        </div>
+        <div class="bar right">
+            <h2>Settings</h2>
+            <div id="settings">
+                <script id="settings-template" type="text/x-handlebars-template">
+                    <button id="start">START</button>
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <div id="session-page">
+        <script id="session-template" type="text/x-handlebars-template">
+            <div id="game">
+                <canvas id="game-canvas" data-title="game-canvas"></canvas>
+            </div>
+        </script>
+    </div>
 </body>
 </html>

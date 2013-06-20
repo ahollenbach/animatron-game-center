@@ -2,28 +2,29 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
     var GameView = Backbone.View.extend({
         // Tag definition
         tagName : 'li',
-        className : 'game',
+        className : 'user',
 
         // Template definition
-        nameTemplate : Handlebars.compile(getTemplate("game-template")),
+        nameTemplate : Handlebars.compile(getTemplate("user-template")),
 
         // Function overrides
         initialize : function(args) {
             this.listenTo(this.model, 'change', this.render);
         },
         render : function() {
-            this.$el.html(this.nameTemplate(this.model.toJSON()));
+            var json = this.model.toJSON();
+            this.$el.html(this.nameTemplate(json)).attr('id', json.username);
             return this;
         },
 
         // Event definitions and handlers
         events : {
-            'click' : 'selectGame'
+            'click' : 'invite'
         },
-        selectGame : function() {
-            this.$el.removeClass("dullify").trigger('gameSelectEvent',this.model);
-            this.$el.siblings().addClass("dullify");
-        }
+        invite : function() {
+            this.$el.toggleClass("selected");
+            console.log(this.model.get('username') + " was clicked.");
+        } 
     });
 
     return GameView;

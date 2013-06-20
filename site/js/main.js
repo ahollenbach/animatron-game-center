@@ -20,46 +20,23 @@ require.config({
     }
 });
 
-var games = [
-{
-    name         : 'Pong',
-    developers   : 'Atari',
-    created      : 1972,
-    singlePlayer : true,
-    multiPlayer  : true
-},
-{
-    name         : 'Racing!',
-    developers   : 'Andrew Hollenbach & Brian Clanton',
-    created      : 2013,
-    singlePlayer : true,
-    multiPlayer  : false
-},
-{
-    name         : 'Blahdiblah',
-    developers   : 'Andrew Hollenbach & Brian Clanton',
-    created      : 2013,
-    singlePlayer : false,
-    multiPlayer  : true
-}
-];
-
+//=============================================================================
+// Globals
+//=============================================================================
+const EASE_LEN = 200, EASING = 'linear';
 function getTemplate(id) {
     return $("#" + id).html();
 }
-
-//var gamesView = new GameCenter.Views.Games({ collection : gameCollection});
-//$(document.body).append(gamesView.el);
 
 require(
   ["jquery",
     "underscore",
     "backbone",
-    "views/galleryview"
+    "views/globalview"
   ],
-  function($, _, Backbone, GalleryView) {
+  function($, _, Backbone, GlobalView) {
      $(function() {
-      new GalleryView(games);
+        new GlobalView();
     });
 
     //var gameCenter = GameCenter;
