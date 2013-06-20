@@ -17,6 +17,7 @@ function (Backbone, Handlebars, GalleryView, UserListView, SettingsView, Session
             const widths = [ 100, 35, 25 ];
             
             $(".dropdown").height("100%");
+            $("#message-box").height("0");
 
             $(".bar").on("click", function(evt) {
                 setWidths(this);
@@ -52,6 +53,7 @@ function (Backbone, Handlebars, GalleryView, UserListView, SettingsView, Session
         events : {
             'click #dropdownToggle' : 'toggleDropdown',
             'click #chatToggle'     : 'toggleChat',
+            'click #login'          : 'login',
 
             'gameSelectEvent' : 'setGame',
             'gameLaunchEvent' : 'launchGame'
@@ -63,7 +65,12 @@ function (Backbone, Handlebars, GalleryView, UserListView, SettingsView, Session
         },
         toggleChat: function(evt) {
             var chat = $("#message-box");
-            if     (chat.hasClass("inactive")) chat.removeClass("inactive").addClass("active")  .animate({height: "350"}, EASE_LEN, EASING);
+            if     (chat.hasClass("inactive")) chat.removeClass("inactive").addClass("active")  .animate({height: "330"}, EASE_LEN, EASING);
+            else if(chat.hasClass("active"))   chat.removeClass("active")  .addClass("inactive").animate({height: "0" }, EASE_LEN, EASING);
+        },
+        login: function(evt) {
+            var chat = $("#message-box");
+            if     (chat.hasClass("inactive")) chat.removeClass("inactive").addClass("active")  .animate({height: "330"}, EASE_LEN, EASING);
             else if(chat.hasClass("active"))   chat.removeClass("active")  .addClass("inactive").animate({height: "0" }, EASE_LEN, EASING);
         },
 
