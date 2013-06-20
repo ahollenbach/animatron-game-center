@@ -6,7 +6,7 @@ define([
 
 var GalleryView = Backbone.View.extend({
     el : "#gallery",
-    url : "/api/games", 
+    url : "/api/games",
 
     // Function overrides
     initialize : function() {

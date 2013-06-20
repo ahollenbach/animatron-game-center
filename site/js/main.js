@@ -4,7 +4,8 @@ require.config({
         jquery     : 'libs/jquery-1.9.1',
         underscore : 'libs/underscore',
         backbone   : 'libs/backbone',
-        handlebars : 'libs/handlebars'
+        handlebars : 'libs/handlebars',
+        jqueryui   : 'libs/jquery-ui'
     },
     shim: {
         underscore: {
@@ -23,10 +24,12 @@ require.config({
 //=============================================================================
 // Globals
 //=============================================================================
-const EASE_LEN = 200, EASING = 'linear';
+const EASE_LEN = 200, EASING = 'easeInOutCubic';
 function getTemplate(id) {
     return $("#" + id).html();
 }
+
+var globalEvents = {};
 
 require(
   ["jquery",
@@ -36,9 +39,12 @@ require(
   ],
   function($, _, Backbone, GlobalView) {
      $(function() {
+        _.extend(globalEvents, Backbone.Events);
+
         new GlobalView();
+
+        
     });
 
-    //var gameCenter = GameCenter;
     //Backbone.history.start();
 });

@@ -10,12 +10,7 @@ var UserListView = Backbone.View.extend({
 
     // Function overrides
     initialize : function() {
-        this.collection = new UserList();
-        this.collection.fetch({ url : "/api/users", reset : true });
-        this.render();
-
-        this.listenTo(this.collection, 'add', this.renderGame);
-        this.listenTo(this.collection, 'reset', this.render);
+        globalEvents.on('gameSelectEvent', this.updateView, this);
     },
     render : function() {
         this.$el.html("");
@@ -23,10 +18,21 @@ var UserListView = Backbone.View.extend({
             this.renderUser(user);
         }, this);
     },
-
     // Helper functions
     renderUser : function(user) {
         this.$el.append((new UserView({ model : user })).render().el);
+    },
+    events: {
+        'gameSelectEvent' : 'updateView'
+    },
+
+    updateView : function(evt, model) {
+        this.collection = new UserList();
+        this.collection.fetch({ url : "/api/users", reset : true });
+        this.render();
+
+        this.listenTo(this.collection, 'add', this.renderGame);
+        this.listenTo(this.collection, 'reset', this.render);
     }
 });
 

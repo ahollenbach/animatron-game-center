@@ -8,17 +8,22 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
 
         // Function overrides
         initialize : function(args) {
-            this.render();
+            globalEvents.on('usersSelectedEvent', this.updateView, this);
         },
         render : function() {
             this.$el.html(this.template(this.model.toJSON()));
             return this;
         },
         events: {
-            'click button#start': 'launchGame'
+            'click button#start': 'launchGame',
+            'usersSelectedEvent': 'updateView'
         },
         launchGame : function(evt) {
             this.$el.trigger('gameLaunchEvent',this.model);
+        },
+        updateView : function(evt, model) {
+            if(this.model != model) this.model = model;
+            this.render();
         }
     });
 

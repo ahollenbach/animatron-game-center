@@ -21,8 +21,9 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
             'click' : 'selectGame'
         },
         selectGame : function() {
-            this.$el.removeClass("dullify").trigger('gameSelectEvent',this.model);
+            this.$el.removeClass("dullify");
             this.$el.siblings().addClass("dullify");
+            globalEvents.trigger('gameSelectEvent', this.model);
         }
     });
 

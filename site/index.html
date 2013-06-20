@@ -10,7 +10,7 @@
 </head>
 
 <body>
-    <div class="dropdown active">
+    <div class="dropdown fullscreen">
         <h1>Animatron Games</h1>
         <h4>Login and select a game to get started!</h4>
         <div id="login">
@@ -20,9 +20,8 @@
     </div>
     <div id="dropdownToggle" class="toggle">Home</div>
 
-    <div id="message-box" class="inactive">
-        <textarea id="messages" class="scroll" name="chat-log" readonly>
-        </textarea>
+    <div id="message-box">
+        <textarea id="messages" class="scroll" name="chat-log" readonly></textarea>
         <input type="text" id="input-message" />
         <p class="helper-text">Press enter to send a message.</p>
     </div>
@@ -46,6 +45,10 @@
         </div>
         <div class="bar middle">
             <h2>Other Players</h2>
+            <div class="playerIcons">
+                <canvas id="singlePlayer" class="playerIcon"></canvas>
+                <canvas id="multiPlayer"  class="playerIcon"></canvas>
+            </div>
             <ul id="user-list">
                 <script id="user-template" type="text/x-handlebars-template">
                     {{username}}
