@@ -9,56 +9,26 @@ function (Backbone, Handlebars, JQueryUI, GalleryView, UserListView, SettingsVie
 
         // Function overrides
         initialize : function(args) {
-            //=================================================================
-            // Deal with the sliding bars. Yuck.
-            //=================================================================
             
-            // size of the smallest non-zero element
-            const widths = [ 100, 35, 25 ];
-
-            $(".bar").on("click", function(evt) {
-                setWidths(this);
-            });
-
-            function setWidths(elm) {
-                var bars = $("#bars"), active = $(elm), activeChanged = true;
-                var visibleBars = bars.children(".visible").length, indexClicked = active.index();
-
-                if(indexClicked == visibleBars-1 && visibleBars < 3 && active.hasClass("active")) {
-                    bars.children().removeClass("active");
-                    active = bars.children().eq(visibleBars++).addClass("visible").addClass("active");
-                } else if(active.hasClass("active")) {
-                    activeChanged = false;
-                } else {
-                    bars.children().removeClass("active");
-                    active.addClass("active");
-                }
-            
-                if(activeChanged) {
-                    // Adjust widths
-                    bars.children().each(function() {
-                        if(!$(this).hasClass("active")) {
-                            $(this).animate({width: widths[visibleBars-1] + "%"},EASE_LEN, EASING);
-                        }
-                    });
-                    active.animate({width: 100-(widths[visibleBars-1]*(visibleBars-1)) + "%"},EASE_LEN, EASING);
-                }
-            }
+            $(".bar").on("click", this.setWidths);
 
             //=============================================================================
             // Global Listeners
             //=============================================================================
             globalEvents.on('gameSelectEvent', this.setGame, this);
+            globalEvents.on('gameLaunchEvent', this.launchGame, this);
 
             new GalleryView();
             new UserListView();
             new SettingsView();
+            new SessionView();
         },
 
         // Event definitions and handlers
         events : {
             'click #dropdownToggle' : 'toggleDropdown',
             'click #chatToggle'     : 'toggleChat',
+            'click .playerIcon'     : 'selectPlayers',
 
             'gameSelectEvent' : 'setGame',
             'gameLaunchEvent' : 'launchGame'
@@ -75,21 +45,45 @@ function (Backbone, Handlebars, JQueryUI, GalleryView, UserListView, SettingsVie
 
         setGame : function(evt) {
             this.drawPlayerSelect(evt.attributes.singlePlayer,evt.attributes.multiPlayer);
-            //new SettingsView({ model : model });
-
         },
-        launchGame : function(evt, model) {
-            new SessionView({ model : model });
-
-            $('#session-page').css({'left':window.innerWidth})
-                              .animate({'left': 0},EASE_LEN,EASING);
-            evt.stopImmediatePropagation();
+        launchGame : function(evt) {
+            
+        },
+        selectPlayers : function(evt) {
+            $(this).siblings().removeClass('selected');
+            $(this).addClass('selected');
         },
 
 
         // helpers
+        setWidths : function (evt) {
+            // size of the smallest non-zero element
+            const widths = [ 100, 35, 25 ];
+
+            var bars = $("#bars"), active = $(this), activeChanged = true;
+            var visibleBars = bars.children(".visible").length, indexClicked = active.index();
+
+            if(indexClicked == visibleBars-1 && visibleBars < 3 && active.hasClass("active")) {
+                bars.children().removeClass("active");
+                active = bars.children().eq(visibleBars++).addClass("visible").addClass("active");
+            } else if(active.hasClass("active")) {
+                activeChanged = false;
+            } else {
+                bars.children().removeClass("active");
+                active.addClass("active");
+            }
+        
+            if(activeChanged) {
+                // Adjust widths
+                bars.children().each(function() {
+                    if(!$(this).hasClass("active")) {
+                        $(this).animate({width: widths[visibleBars-1] + "%"},EASE_LEN, EASING);
+                    }
+                });
+                active.animate({width: 100-(widths[visibleBars-1]*(visibleBars-1)) + "%"},EASE_LEN, EASING);
+            }
+        },
         drawPlayerSelect: function(singlePlayer,multiPlayer) {
-            console.log(singlePlayer,multiPlayer)
             var canvas = document.getElementById('singlePlayer');
             canvas.width = canvas.height;
             var h=canvas.height,w=canvas.width,m=w/3,y=h/2+m,r=m/2,x; //m is model width, height should be m*2

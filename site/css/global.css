@@ -30,14 +30,14 @@ html, body {
 }
 
 .bar.left {
-    background-color: #75C6D1;
+    background-color: #B72F3D;
     width: 100%;
 }
 .bar.middle {
-    background-color: #A3E0E0;
+    background-color: #C24752;
 }
 .bar.right {
-    background-color: #66A8CC;
+    background-color: #B32323;
 }
 
 
@@ -275,4 +275,7 @@ ul#user-list  {
 }
 .playerIcon.disabled {
     background-color: #AAA !important;
+}
+.playerIcon.selected {
+    border: 2px solid black;
 }

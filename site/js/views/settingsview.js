@@ -5,13 +5,14 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
 
         // Template definition
         template : Handlebars.compile(getTemplate("settings-template")),
+        modelJSON: {},
 
         // Function overrides
         initialize : function(args) {
-            globalEvents.on('usersSelectedEvent', this.updateView, this);
+            globalEvents.on('gameSelectEvent', this.updateView, this);
         },
-        render : function() {
-            this.$el.html(this.template(this.model.toJSON()));
+        render : function(json) {
+            this.$el.html(this.template(json));
             return this;
         },
         events: {
@@ -19,11 +20,11 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
             'usersSelectedEvent': 'updateView'
         },
         launchGame : function(evt) {
-            this.$el.trigger('gameLaunchEvent',this.model);
+            globalEvents.trigger('gameLaunchEvent', modelJSON);
         },
-        updateView : function(evt, model) {
-            if(this.model != model) this.model = model;
-            this.render();
+        updateView : function(evt) {
+            modelJSON = evt.attributes;
+            this.render(evt.attributes);
         }
     });
 
