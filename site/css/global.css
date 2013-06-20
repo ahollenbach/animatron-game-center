@@ -1,3 +1,7 @@
+/*@import url(http://fonts.googleapis.com/css?family=Bonbon);*/
+/*@import url(http://fonts.googleapis.com/css?family=Faster+One);*/
+@import url(http://fonts.googleapis.com/css?family=Finger+Paint);
+
 html, body {
     width: 100%;
     height: 100%;
@@ -5,7 +9,7 @@ html, body {
     margin: 0;
 
     color: #F9F9F9;
-    font-family: sans-serif;
+    font-family: 'Finger Paint', sans-serif;
     overflow: hidden;
 }
 
@@ -206,15 +210,18 @@ ul#user-list  {
     background-color: #EEE;
     text-align: center;
     z-index: 8;
+    /*font-family: 'Bonbon', sans-serif;*/
 }
 #message-box textarea {
     margin-top:5px;
     width: 95%;
     height:250px; 
     resize: none;
+    font-family: 'Finger Paint', sans-serif;
 }
-#input-message {
+#chat-message {
     width: 95%;
+    font-family: 'Finger Paint', sans-serif;
 }
 .helper-text {
     font-size: .7em;

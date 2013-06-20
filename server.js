@@ -4,6 +4,8 @@ var application_root = __dirname,
     path = require( 'path' ), //Utilities for dealing with file paths
     mongoose = require( 'mongoose' ); //MongoDB integration
 
+var usernameValidator = /^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/;
+
 // Create server
 var app = express(),
     server = require('http').createServer(app),
@@ -23,7 +25,8 @@ var Game = new mongoose.Schema({
 
 var User = new mongoose.Schema({
     username : String,
-    inGame : Boolean
+    inGame : Boolean,
+    online : Boolean
 }, { collection : "users" });
 
 // Define models
@@ -73,18 +76,42 @@ app.get('/api/users', function(request, response) {
 
 // Add a user
 app.post('/api/users', function(request, response) {
-    var user = new UserModel({
-        username : request.body.username,
-        inGame : false
-    });
+    // Check that the username using valid syntactical elements
+    if (usernameValidator.test(request.body.username)) {
+        // Check that the username is not already taken
+        UserModel.findOne({ username : request.body.username }, function(error, user) {
+            if (error) {
+                console.log(error);
+                return response.send('500', { 
+                    error : "The server was not able to query database for " +
+                        request.body.username
+                });
+            } else if (user) {
+                return response.send('400', {
+                    error : "Someone has already taken the username " + 
+                        request.body.username
+                });
+            } else {
+                var u = new UserModel({
+                    username : request.body.username,
+                    inGame : false,
+                    online : false
+                });
 
-    user.save(function(error) {
-        return console.log(!error ? 'added user ' + request.body.username : error);
-    });
+                // u.save(function(error) {
+                //     return console.log(!error ? 'added user ' + request.body.username : error);
+                // });
 
-    // TODO: Broadcast that a new user has been added
-
-    return response.send(user);
+                // TODO: Broadcast that a new user has been added
+                return response.send(u);
+            }
+        });
+    } else {
+        return response.send('400', { 
+            error : "The username \"" +
+                request.body.username + "\" is invalid.\nUsernames can only consist of alphanumeric characters, underscores, hyphens, and spaces."
+        });
+    }
 });
 
 // Update a user
@@ -127,11 +154,12 @@ chat.on('connection', function(socket) {
         socket.join(username);
 
         socket.set("username", username, function() {
-             socket.broadcast.emit('user_connected', username);
+             socket.emit('user_connected', username);
         });      
     });
 
     socket.on('message', function(message) {
+        console.log("i got a message");
         socket.get("username", function(error, username) {
             var time = (new Date()).getTime();
 

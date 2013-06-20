@@ -4,7 +4,9 @@ require.config({
         jquery     : 'libs/jquery-1.9.1',
         underscore : 'libs/underscore',
         backbone   : 'libs/backbone',
-        handlebars : 'libs/handlebars'
+        handlebars : 'libs/handlebars',
+        socketio   : 'libs/socket.io.min',
+        moment     : 'libs/moment.min'
     },
     shim: {
         underscore: {
@@ -16,6 +18,9 @@ require.config({
         }, 
         handlebars : {
             exports : "Handlebars"
+        },
+        socketio : {
+            exports : "io"
         }
     }
 });
