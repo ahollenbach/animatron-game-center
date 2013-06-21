@@ -12,7 +12,7 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
         timeFormat : "[(]h:mm:ss A[)] ",
 
         // Socket.io stuff
-        baseURL : "http://192.168.40.73",
+        baseURL : window.location.origin,
         chat : null,
         invite : null,
 
@@ -173,7 +173,9 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
             box.get(0).scrollTop = box.get(0).scrollHeight;
         },
         configureSockets : function(username) {
-            this.chat = io.connect(this.baseURL + "/chat");
+            this.chat = io.connect(this.baseURL + "/chat", { 
+                'sync disconnect on unload' : true
+            });
             this.invite = io.connect(this.baseURL + "/invite");
 
             var that = this;
@@ -183,10 +185,18 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
                 console.log(username + " connected");
                 that.addMessageToBox(username + " has joined Animatron Game Center");
             });
+            this.chat.on('user_disconnected', function(username) {
+                console.log(username + " disconnected");
+                that.addMessageToBox(username + " has left Animatron Game Center");
+            });
             this.chat.on('message', function(time, author, message) {
                 console.log("got a message");
                 that.addMessageToBox(moment(time).format(that.timeFormat) + author +
                     ": " + message);
+            });
+            this.chat.on('server_message', function(message) {
+                console.log("got a message from the server");
+                that.addMessageToBox(message);
             });
 
             // Assign listeners for invite socket
