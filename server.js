@@ -157,6 +157,7 @@ chat.on('connection', function(socket) {
 
         socket.set("username", username, function() {
              socket.emit('user_connected', username);
+             socket.broadcast.emit('user_connected', username);
         });      
     });
 

@@ -130,7 +130,7 @@ html, body {
     width: 95%;
     height:250px; 
     resize: none;
-    font-family: sans-serif;
+    font-family: 'Finger Paint', sans-serif;
 }
 #input-message {
     width: 95%;

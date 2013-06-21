@@ -170,7 +170,7 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
         addMessageToBox : function(message) {
             var box = $("#messages");
             box.val(box.val() + (!$.trim(box.val()) ? "" : "\n") + message);
-            box.attr("scrollTop", box.attr("scrollHeight"));
+            box.get(0).scrollTop = box.get(0).scrollHeight;
         },
         configureSockets : function(username) {
             this.chat = io.connect(this.baseURL + "/chat");
