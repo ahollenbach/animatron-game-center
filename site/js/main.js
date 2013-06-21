@@ -5,8 +5,9 @@ require.config({
         underscore : 'libs/underscore',
         backbone   : 'libs/backbone',
         handlebars : 'libs/handlebars',
-        jqueryui   : 'libs/jquery-ui'
-    },
+        socketio   : 'libs/socket.io.min',
+        moment     : 'libs/moment.min',
+        jqueryui   : 'libs/jquery-ui'    },
     shim: {
         underscore: {
             exports : '_'
@@ -17,6 +18,9 @@ require.config({
         }, 
         handlebars : {
             exports : "Handlebars"
+        },
+        socketio : {
+            exports : "io"
         }
     }
 });
