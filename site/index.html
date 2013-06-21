@@ -32,46 +32,62 @@
             <h2>Select a game</h2>
             <div id="gallery-container">
             <ul id="gallery">
-                <script id="game-template" type="text/x-handlebars-template">
-                    <div class='game-info'>
-                      <h4 class='game-title'>{{name}}</h4>
-                      <div class='extra'>
-                        by {{developers}}
-                      </div>
-                    </div>
-                </script>
+                <!--game-template-->
             </ul>
             </div>
         </div>
         <div class="bar middle">
-            <h2>Other Players</h2>
-            <div class="playerIcons">
-                <canvas id="singlePlayer" class="playerIcon"></canvas>
-                <canvas id="multiPlayer"  class="playerIcon"></canvas>
-            </div>
-            <ul id="user-list">
-                <script id="user-template" type="text/x-handlebars-template">
-                    {{username}}
-                </script>
-            </ul>
+            <!--playerselect-template-->
         </div>
         <div class="bar right">
             <h2>Settings</h2>
             <div id="settings">
-                <script id="settings-template" type="text/x-handlebars-template">
-                    <button id="start">START</button>
-                </script>
+                <!--settings-template-->
             </div>
         </div>
     </div>
 
     <div id="session-page">
-        <script id="session-template" type="text/x-handlebars-template">
-            <h1 style="color:#111;">{{name}}</h1>
-            <div id="game">
-                <canvas id="game-canvas" data-title="game-canvas"></canvas>
-            </div>
-        </script>
+        <!--session-template-->
     </div>
+
+<!--==========HANDLEBARS TEMPLATES==========-->
+<script id="game-template" type="text/x-handlebars-template">
+    <div class='game-info'>
+      <h4 class='game-title'>{{name}}</h4>
+      <div class='extra'>
+        <p>by {{developers}}</p>
+            <p>Up to {{maxPlayers}} players!</p>
+      </div>
+    </div>
+</script>
+
+<script id="playerselect-template" type="text/x-handlebars-template">
+    <h2>Players</h2>
+    <div class="playerIcons">
+        {{#times maxPlayers}}
+            <div id='{{this}}p' class="playerIcon dullify">{{this}}P</div>
+        {{/times}}
+    </div>
+    <ul id="user-list">
+
+    </ul>
+</script>
+
+<script id="user-template" type="text/x-handlebars-template">
+    {{username}}
+</script>
+
+<script id="settings-template" type="text/x-handlebars-template">
+    <button id="start">START</button>
+</script>
+
+<script id="session-template" type="text/x-handlebars-template">
+    <h1 style="color:#111;">{{name}}</h1>
+    <div id="game">
+        <canvas id="game-canvas" data-title="game-canvas"></canvas>
+    </div>
+</script>
+
 </body>
 </html>

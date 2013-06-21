@@ -92,7 +92,6 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
             }
         },
         setGame : function(evt) {
-            this.drawPlayerSelect(evt.attributes.singlePlayer,evt.attributes.multiPlayer);        
         },
         launchGame : function(evt) {
             
@@ -127,50 +126,10 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
                 active.animate({width: 100-(widths[visibleBars-1]*(visibleBars-1)) + "%"},EASE_LEN, EASING);
             }
         },
-        drawPlayerSelect: function(singlePlayer,multiPlayer) {
-            var canvas = document.getElementById('singlePlayer');
-            canvas.width = canvas.height;
-            var h=canvas.height,w=canvas.width,m=w/3,y=h/2+m,r=m/2,x; //m is model width, height should be m*2
-
-            if(!singlePlayer) $(canvas).addClass('disabled');
-            else $(canvas).removeClass('disabled');
-            var ctx = canvas.getContext('2d');
-            setStyle(ctx);
-            drawModel(ctx,x=w/2-m/2,y,r,m);
-
-            canvas = document.getElementById('multiPlayer');
-            canvas.width = canvas.height;
-            if(!multiPlayer) $(canvas).addClass('disabled');
-            else $(canvas).removeClass('disabled');
-            ctx = canvas.getContext('2d');
-            setStyle(ctx);
-            x = w/8; var limit = x+5*m/4;
-            for(;x<=limit;x+=5*m/4) {
-                drawModel(ctx,x,y,r,m);
-            }
-
-            function drawModel(ctx,x,y,r,m) {
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-                ctx.bezierCurveTo(x, y-3*m/2, x+m, y-3*m/2, x+m, y);
-                ctx.closePath();
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(x+m/2, y-h/2-r/3, r, 0, 2 * Math.PI, false);
-                ctx.stroke();
-            }
-
-            function setStyle(ctx) {
-                ctx.strokeStyle = 'black';
-                ctx.fillStyle = '#F2F2F2';
-                ctx.lineWidth = w/30;
-            }
-        },
         addMessageToBox : function(message) {
-            var box = $("#messages");
-            box.val(box.val() + (!$.trim(box.val()) ? "" : "\n") + message);
-            box.attr("scrollTop", box.attr("scrollHeight"));
+            var chatBox = $("#messages");
+            chatBox.val(chatBox.val() + (!$.trim(chatBox.val()) ? "" : "\n") + message);
+            chatBox.get(0).scrollTop = chatBox.get(0).scrollHeight;
         },
         configureSockets : function(username) {
             this.chat = io.connect(this.baseURL + "/chat");
