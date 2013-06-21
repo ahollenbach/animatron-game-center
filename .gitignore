@@ -1,4 +1,3 @@
-site/js/libs/*
 node_modules/*
 
 .idea/*
