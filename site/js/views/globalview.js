@@ -40,6 +40,8 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
             'click #chatToggle'     : 'toggleChat',
             'click #login button'   : 'login',
             'click .playerIcon'     : 'selectPlayers',
+            'click .popup accept'   : 'acceptInvite',
+            'click .popup decline'  : 'declineInvite',
 
             'keydown #chat-message' : 'sendChatMessage'
         },
@@ -90,6 +92,12 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
         setGame : function(evt) {
         },
         launchGame : function(evt) {
+        },
+        acceptInvite : function() {
+            this.invite.emit('accept');
+        },
+        declineInvite : function() {
+            this.invite.emit('decline');
         },
         
         
@@ -159,6 +167,13 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
                 console.log("got a message from the server");
                 that.addMessageToBox(message);
             });
+
+            //TODO: On invite received:
+            // data has to have inviter and game attributes
+            // Also check the listeners
+            var template = Handlebars.compile(getTemplate("invite-template"));
+            this.$el.append(template(data));
+
 
             // Assign listeners for game socket
             this.gameConn.on('load', function (opponentUsername) {
