@@ -54,8 +54,7 @@ var UserListView = Backbone.View.extend({
         'click button#invite' : 'invitePlayers'
     },
     setPlayerIcons : function(evt) {
-        $(evt.toElement).removeClass("dullify").addClass('illuminate');
-        $(evt.toElement).siblings().addClass("dullify").removeClass('illuminate');
+        this.illuminateIcon($(evt.toElement));
     },
     invitePlayers : function(e) {
         // curGameId will be changed at some point
@@ -70,7 +69,7 @@ var UserListView = Backbone.View.extend({
             this.collection.fetch({ url : "/api/users", reset : true });
             this.render(evt);
             // Autoselect 1 player
-            $('#1p').removeClass('dullify').addClass('illuminate');
+            this.illuminateIcon($('#1p'));
             this.curGameId = evtId;
         }
     },
@@ -88,7 +87,15 @@ var UserListView = Backbone.View.extend({
             this.selectedUsers.push(username);
         else
             this.selectedUsers.splice(index, 1);
-    }
+    },
+
+    illuminateIcon : function(elm) {
+        elm.removeClass("dullify").addClass('illuminate');
+        elm.siblings().addClass("dullify").removeClass('illuminate');
+        if(elm.id == '1p') {
+            //TODO: show AI instead
+        }
+	}
 });
 
 return UserListView;

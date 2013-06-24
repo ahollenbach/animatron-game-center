@@ -20,7 +20,7 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
         events : {
             'click' : 'selectGame'
         },
-        selectGame : function() {
+        selectGame : function(evt) {
             this.$el.removeClass("dullify");
             this.$el.siblings().addClass("dullify");
             globalEvents.trigger('gameSelectEvent', this.model);

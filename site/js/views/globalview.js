@@ -13,12 +13,13 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
 
         // Socket.io stuff
         baseURL : window.location.origin,
-        chat : null,
+        chat   : null,
         invite : null,
+        gameConn : null,
+        game     : null,
 
         // Function overrides
         initialize : function(args) {
-            
             $(".bar").on("click", this.setWidths);
 
             //=============================================================================
@@ -39,6 +40,8 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
             'click #chatToggle'     : 'toggleChat',
             'click #login button'   : 'login',
             'click .playerIcon'     : 'selectPlayers',
+            'click .popup accept'   : 'acceptInvite',
+            'click .popup decline'  : 'declineInvite',
 
             'keydown #chat-message' : 'sendChatMessage'
         },
@@ -54,9 +57,7 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
         login: function(evt) {
             evt.preventDefault();
 
-            var chatBox = $("#message-box");
-            if     (chatBox.hasClass("inactive")) chatBox.removeClass("inactive").addClass("active")  .animate({height: "330"}, EASE_LEN, EASING);
-            else if(chatBox.hasClass("active"))   chatBox.removeClass("active")  .addClass("inactive").animate({height: "0" }, EASE_LEN, EASING);
+            this.toggleChat();
 
             // Add user via RESTful API
             var username = $("#login input[name='username']").val().trim();
@@ -91,6 +92,12 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
         setGame : function(evt) {
         },
         launchGame : function(evt) {
+        },
+        acceptInvite : function() {
+            this.invite.emit('accept');
+        },
+        declineInvite : function() {
+            this.invite.emit('decline');
         },
         
         
@@ -132,6 +139,7 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
                 'sync disconnect on unload' : true
             });
             this.invite = io.connect(this.baseURL + "/invite");
+            this.gameConn = io.connect(this.baseURL + "/game");
 
             var that = this;
 
@@ -160,8 +168,25 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
                 that.addMessageToBox(message);
             });
 
-            // Assign listeners for invite socket
-            // TODO: Setup these listeners
+            //TODO: On invite received:
+            // data has to have inviter and game attributes
+            // Also check the listeners
+            var template = Handlebars.compile(getTemplate("invite-template"));
+            this.$el.append(template(data));
+
+
+            // Assign listeners for game socket
+            this.gameConn.on('load', function (opponentUsername) {
+                //game = initGame();
+            });
+            this.gameConn.on('start', function (opponentId) {
+            });
+            this.gameConn.on('state', function (json) {
+            });
+            this.gameConn.on('end', function (json) {
+            });
+
+
 
             this.chat.emit('connection_success', username);
         }
