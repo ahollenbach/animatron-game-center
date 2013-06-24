@@ -40,10 +40,7 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
             'click #login button'   : 'login',
             'click .playerIcon'     : 'selectPlayers',
 
-            'keydown #chat-message' : 'sendChatMessage',
-
-            'gameSelectEvent' : 'setGame',
-            'gameLaunchEvent' : 'launchGame'
+            'keydown #chat-message' : 'sendChatMessage'
         },
         toggleDropdown: function(evt) {
             var dropdown = $(".dropdown");
@@ -94,7 +91,6 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
         setGame : function(evt) {
         },
         launchGame : function(evt) {
-            
         },
         
         

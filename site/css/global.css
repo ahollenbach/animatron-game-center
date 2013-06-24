@@ -246,7 +246,6 @@ ul#user-list  {
     padding: 0px 0px;
     margin: 0px auto;
     overflow-y: auto;
-    height:100%;
     width:70%;
 }
 .user {
@@ -350,4 +349,44 @@ ul#user-list  {
 }
 .playerIcon.selected {
     border: 2px solid black;
+}
+
+
+/*=======================================================*/
+/* Buttons!
+/*=======================================================*/
+button {
+    -moz-box-shadow:inset 0px 1px 0px 0px #FFF;
+    -webkit-box-shadow:inset 0px 1px 0px 0px #FFF;
+    box-shadow:inset 0px 1px 0px 0px #FFF;
+
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #EDEDED), color-stop(1, #DFDFDF) );
+    background:-moz-linear-gradient( center top, #EDEDED 5%, #DFDFDF 100% );
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#EDEDED', endColorstr='#DFDFDF');
+    background-color:#EDEDED;
+
+    -moz-border-radius:6px;
+    -webkit-border-radius:6px;
+    border-radius:6px;
+    border:1px solid #DCDCDC;
+
+    display:inline-block;
+    color:#333;
+    font-family:arial;
+    font-size:15px;
+    font-weight:bold;
+    padding:6px 24px;
+    text-shadow:1px 1px 0px #FFF;
+    margin: 1em;
+    cursor: pointer;
+}
+button:hover {
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #DFDFDF), color-stop(1, #EDEDED) );
+    background:-moz-linear-gradient( center top, #DFDFDF 5%, #EDEDED 100% );
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#DFDFDF', endColorstr='#EDEDED');
+    background-color:#DFDFDF;
+}
+button:active {
+    position:relative;
+    top:1px;
 }
