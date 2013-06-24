@@ -250,9 +250,10 @@ chat.on('connection', function(socket) {
 // Invite namespace
 invite.on('connection', function(socket) {
     socket.on('send', function(invitee, gameName) {
+        console.log("%%%%% received a send message");
         socket.get("username", function(error, inviter) {
-            var id = onlineUsers.getId(username);
-            io.sockets.socket(id).emit('received', inviter, gameName);
+            var id = onlineUsers.getId(invitee);
+            invite.socket(id).emit('received', inviter, gameName);
         });
     });
 
