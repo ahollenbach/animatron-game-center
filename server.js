@@ -1,6 +1,33 @@
 //=============================================================================
+// Mongoose/MongoDB
+//=============================================================================
+var mongoose = require('mongoose');
+
+// Connect to database
+mongoose.connect('mongodb://192.168.40.73:27017/gamecenter');
+
+// Define schemas
+var Game = new mongoose.Schema({
+    name : String,
+    developers : String,
+    created : Date, 
+    singlePlayer : Boolean,
+    multiPlayer : Boolean
+}, { collection : "games" });
+
+var User = new mongoose.Schema({
+    username : String,
+    inGame : Boolean
+}, { collection : "users" });
+
+// Define models
+var GameModel = mongoose.model('Game', Game);
+var UserModel = mongoose.model('User', User);
+
+// TODO: Modularize this code
+//=============================================================================
 // User List Module
-// Temporary location, will be moved to a separate node module in the future
+// Temporary location - will be modularized later
 //=============================================================================
 var UserList = (function() {
     // Constructor
@@ -13,10 +40,6 @@ var UserList = (function() {
 
         this.remove = function(username) {
             delete users[username];
-        };
-
-        this.isOnline = function(username) {
-            return users.hasOwnProperty(username);
         };
 
         this.setInGame = function(username, inGame) {
@@ -36,7 +59,10 @@ var UserList = (function() {
             var list = [];
 
             for (var u in users)
-              list.push(u);
+                list.push(new User({
+                    username : u,
+                    inGame : users[u].inGame
+                }));
 
             return list;
         };
@@ -45,13 +71,20 @@ var UserList = (function() {
     return c;
 })();
 
+// TODO: Modularize this code
+//=============================================================================
+// Pong Game Module
+// Temporary location - will be modularized later
+//=============================================================================
+
+
+
 //=============================================================================
 // Actual Server Stuff
 //=============================================================================
 // Module dependencies.
 var express = require( 'express' ), //Web framework
-    path = require( 'path' ), //Utilities for dealing with file paths
-    mongoose = require( 'mongoose' ); //MongoDB integration
+    path = require( 'path' ); //Utilities for dealing with file paths
 
 var usernameValidator = /^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/;
 var onlineUsers = new UserList();
@@ -60,28 +93,6 @@ var onlineUsers = new UserList();
 var app = express(),
     server = require('http').createServer(app),
     io = require('socket.io').listen(server);
-
-// Connect to database
-mongoose.connect('mongodb://192.168.40.73:27017/gamecenter');
-
-// Define schemas
-var Game = new mongoose.Schema({
-    name : String,
-    developers : String,
-    created : Date, 
-    singlePlayer : Boolean,
-    multiPlayer : Boolean
-}, { collection : "games" });
-
-var User = new mongoose.Schema({
-    username : String,
-    inGame : Boolean,
-    online : Boolean
-}, { collection : "users" });
-
-// Define models
-var GameModel = mongoose.model('Game', Game);
-var UserModel = mongoose.model('User', User);
 
 // Configure server
 app.configure( function() {
@@ -122,9 +133,7 @@ app.get('/api/games', function(request, response) {
 
 // Get list of all users
 app.get('/api/users', function(request, response) {
-    return UserModel.find(function(error, users) {
-        return !error ? response.send(users) : console.log(error);
-    });
+    return onlineUsers.retrieve();
 });
 
 // Add a user
@@ -147,15 +156,13 @@ app.post('/api/users', function(request, response) {
             } else {
                 var u = new UserModel({
                     username : request.body.username,
-                    inGame : false,
-                    online : false
+                    inGame : false
                 });
 
                 // u.save(function(error) {
                 //     return console.log(!error ? 'added user ' + request.body.username : error);
                 // });
 
-                // TODO: Broadcast that a new user has been added
                 return response.send(u);
             }
         });
@@ -185,15 +192,17 @@ app.put('/api/users/:id', function(request, response) {
     });
 });
 
+// TODO: Add a login entry point via RESTful API
+
 //=============================================================================
 // Socket.io Implementation
 //
 // As a convention, I am use single quotes for event types and double quotes
 // for any other type of string
 //=============================================================================
-var chat = io.of("/chat"),
+var chat   = io.of("/chat"),
     invite = io.of("/invite"),
-    game = io.of("/game");
+    game   = io.of("/game");
 
 // General connection
 io.on('connection', function(socket) {
