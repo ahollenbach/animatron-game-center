@@ -12,7 +12,7 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
         timeFormat : "[(]h:mm:ss A[)] ",
 
         // Socket.io stuff
-        baseURL : "http://192.168.40.73",
+        baseURL : window.location.origin,
         chat   : null,
         invite : null,
         gameConn : null,
@@ -122,12 +122,14 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
             }
         },
         addMessageToBox : function(message) {
-            var chatBox = $("#messages");
-            chatBox.val(chatBox.val() + (!$.trim(chatBox.val()) ? "" : "\n") + message);
-            chatBox.get(0).scrollTop = chatBox.get(0).scrollHeight;
+            var box = $("#messages");
+            box.val(box.val() + (!$.trim(box.val()) ? "" : "\n") + message);
+            box.get(0).scrollTop = box.get(0).scrollHeight;
         },
         configureSockets : function(username) {
-            this.chat = io.connect(this.baseURL + "/chat");
+            this.chat = io.connect(this.baseURL + "/chat", { 
+                'sync disconnect on unload' : true
+            });
             this.invite = io.connect(this.baseURL + "/invite");
             this.gameConn = io.connect(this.baseURL + "/game");
 
@@ -136,12 +138,26 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
             // Assign listeners for chat socket
             this.chat.on('user_connected', function(username) {
                 console.log(username + " connected");
+
+                if (username != that.username)
+                    globalEvents.trigger('userConnected', username);
                 that.addMessageToBox(username + " has joined Animatron Game Center");
+            });
+            this.chat.on('user_disconnected', function(username) {
+                console.log(username + " disconnected");
+
+                if (username != that.username)
+                    globalEvents.trigger('userDisconnected', username);
+                that.addMessageToBox(username + " has left Animatron Game Center");
             });
             this.chat.on('message', function(time, author, message) {
                 console.log("got a message");
                 that.addMessageToBox(moment(time).format(that.timeFormat) + author +
                     ": " + message);
+            });
+            this.chat.on('server_message', function(message) {
+                console.log("got a message from the server");
+                that.addMessageToBox(message);
             });
 
             // Assign listeners for game socket

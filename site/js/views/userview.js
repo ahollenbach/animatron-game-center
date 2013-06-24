@@ -24,6 +24,8 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
         invite : function() {
             this.$el.toggleClass("selected");
             console.log(this.model.get('username') + " was clicked.");
+
+            globalEvents.trigger('inviteeSelected', this.model.get("username"));
         } 
     });
 
