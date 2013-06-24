@@ -144,7 +144,11 @@ body {
     width: 95%;
     height:250px; 
     resize: none;
+<<<<<<< HEAD
+    font-family: 'Finger Paint', sans-serif;
+=======
     font-family: 'Open Sans', sans-serif;
+>>>>>>> develop
 }
 #input-message {
     width: 95%;

@@ -9,7 +9,7 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
 
         // Function overrides
         initialize : function(args) {
-            globalEvents.on('gameSelectEvent', this.updateView, this);
+            globalEvents.on('gameSelectEvent', this.setView, this);
         },
         render : function(json) {
             this.$el.html(this.template(json));
@@ -17,12 +17,11 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
         },
         events: {
             'click button#start': 'launchGame',
-            'usersSelectedEvent': 'updateView'
         },
         launchGame : function(evt) {
             globalEvents.trigger('gameLaunchEvent', modelJSON);
         },
-        updateView : function(evt) {
+        setView : function(evt) {
             modelJSON = evt.attributes;
             this.render(evt.attributes);
         }

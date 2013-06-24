@@ -5,8 +5,7 @@ define(['backbone'], function (Backbone) {
             name         : 'Animatron Game',
             developers   : 'Andrew Hollenbach & Brian Clanton',
             created      : 2013,
-            singlePlayer : true,
-            multiPlayer  : true,
+            numPlayers   : 1,
             settings: {
                 duration: {
                     timed    : [1,2,3,4,5],

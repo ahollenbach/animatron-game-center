@@ -1,5 +1,5 @@
 define(['backbone', 'models/user'], function (Backbone, User) {
-    var Gallery = Backbone.Collection.extend({
+    var UserList = Backbone.Collection.extend({
         // Model definition
         model : User,
         
@@ -8,8 +8,19 @@ define(['backbone', 'models/user'], function (Backbone, User) {
             return this.filter(function(game) {
                 return !game.get('inGame');
             });
+        },
+        getByUsername: function(username){
+            return this.filter(function(user) {
+                return user.get("username") === username;
+            });
+        },
+        addUser : function(username) {
+            this.add(new User({ username : username }));
+        },
+        removeUser : function(username) {
+            this.remove(this.getByUsername(username));
         }
     });
 
-    return Gallery;
+    return UserList;
 });

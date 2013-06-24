@@ -59,7 +59,7 @@ var UserList = (function() {
             var list = [];
 
             for (var u in users)
-                list.push(new User({
+                list.push(new UserModel({
                     username : u,
                     inGame : users[u].inGame
                 }));
@@ -133,7 +133,7 @@ app.get('/api/games', function(request, response) {
 
 // Get list of all users
 app.get('/api/users', function(request, response) {
-    return onlineUsers.retrieve();
+    return response.send(onlineUsers.retrieve());
 });
 
 // Add a user

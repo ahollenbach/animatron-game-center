@@ -4,7 +4,7 @@ define(['backbone'], function (Backbone) {
 		defaults : {
 			username : "Bob Loblaw",
 			inGame : false,
-			online : false
+			online : true
 		},
 		
 		// Custom properties
