@@ -20,6 +20,12 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
             this.render();
             this.$el.addClass("rendered");
 
+            // Add the game to the canvas
+            var gameName = json.name.toLowerCase(); // 'games/' + gameName + "/" + gameName + '.js'
+            require(['games/pong/pong'], function(pong) {
+                console.log(pong);
+            });
+
             $('#session-page').css({'left':window.innerWidth})
                               .animate({'left': 0},EASE_LEN,EASING);
         }

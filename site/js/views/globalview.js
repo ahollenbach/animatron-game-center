@@ -13,12 +13,13 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
 
         // Socket.io stuff
         baseURL : "http://192.168.40.73",
-        chat : null,
+        chat   : null,
         invite : null,
+        gameConn : null,
+        game     : null,
 
         // Function overrides
         initialize : function(args) {
-            
             $(".bar").on("click", this.setWidths);
 
             //=============================================================================
@@ -54,9 +55,7 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
         login: function(evt) {
             evt.preventDefault();
 
-            var chatBox = $("#message-box");
-            if     (chatBox.hasClass("inactive")) chatBox.removeClass("inactive").addClass("active")  .animate({height: "330"}, EASE_LEN, EASING);
-            else if(chatBox.hasClass("active"))   chatBox.removeClass("active")  .addClass("inactive").animate({height: "0" }, EASE_LEN, EASING);
+            this.toggleChat();
 
             // Add user via RESTful API
             var username = $("#login input[name='username']").val().trim();
@@ -130,6 +129,7 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
         configureSockets : function(username) {
             this.chat = io.connect(this.baseURL + "/chat");
             this.invite = io.connect(this.baseURL + "/invite");
+            this.gameConn = io.connect(this.baseURL + "/game");
 
             var that = this;
 
@@ -144,8 +144,18 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
                     ": " + message);
             });
 
-            // Assign listeners for invite socket
-            // TODO: Setup these listeners
+            // Assign listeners for game socket
+            this.gameConn.on('load', function (opponentUsername) {
+                //game = initGame();
+            });
+            this.gameConn.on('start', function (opponentId) {
+            });
+            this.gameConn.on('state', function (json) {
+            });
+            this.gameConn.on('end', function (json) {
+            });
+
+
 
             this.chat.emit('connection_success', username);
         }
