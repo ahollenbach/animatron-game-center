@@ -15,7 +15,8 @@ define(['libs/hardcore'], function (Animatron) {
 	var   tLastPoint            = 0;                         // time the last point was scored
 	var   playerId              = 0;                         // Which side you are on, supplied by server
 	var   opponentY             = 0;                         // Position of opponent's paddle
-
+	var   collided              = false;                     // If puck collided this step
+	var   scored                = false;                     // If puck scored this step
 
 	// Animatron aliases
 	var b = Builder._$, C = anm.C;
@@ -76,7 +77,6 @@ define(['libs/hardcore'], function (Animatron) {
 			default:
 				break;
 		}
-		if(SEND_COLLISIONS) sendCollisionData();
 	}
 
 	//adjusts and reverses the velocity based on where the hit occurred on the paddle
@@ -92,7 +92,6 @@ define(['libs/hardcore'], function (Animatron) {
 		puck.vy = newVectors.vy;
 		puck.vx *= speedMultiplier;
 		puck.vy *= speedMultiplier;
-		//TODO: send the new vector
 	}
 
 	function toComponentVectors(speed,angle) {
@@ -116,7 +115,10 @@ define(['libs/hardcore'], function (Animatron) {
 	//t: the elapsed time
 	function addPoint(playerNum,t) {
 		//only send point scored if you scored goal
-		if(SEND_COLLISIONS && playerNum == playerId+1) sendPointScored(playerId);
+		if(playerNum == playerId+1) {
+			resetPuck();
+			scored = true;
+		}
 	}
 
 	function updateScore(playerNum) {
@@ -217,6 +219,23 @@ define(['libs/hardcore'], function (Animatron) {
 		}
 	}
 
+	var stateMod = function(t) {
+		var state = {
+			id      : playerId,
+			pos     : (playerId == 0) ? player1.y : player2.y
+			//puck    : getPuckData()
+		}
+		if (collided) {
+			state.collision = getPuckData();
+			collided = false;
+		}
+		if (scored) {
+			state.scored = getPuckData();
+			scored = false;
+		}
+		// TODO: Send state
+	}
+
 
 	/**************************APPEARANCE/SCORE FORMATTING**************************/
 	var player1Color 		= '#BB0000';
@@ -284,13 +303,11 @@ define(['libs/hardcore'], function (Animatron) {
 		puckElem.modify(function(t) {
 			     this.$.collides(player1.v, function() {
 			     	bouncePuck('left',t,player1.v.state);
-			        //TODO: send new vector
 			     })
 			  })
 			 .modify(function(t) {
 			     this.$.collides(player2.v, function() {
 			     	bouncePuck('right',t,player2.v.state);
-			        //TODO: send new vector
 			     })
 			  });
 		puck.x = 0;
@@ -343,6 +360,7 @@ define(['libs/hardcore'], function (Animatron) {
 		if(mode == GAME_MODE.versusAI) ai.setPlayerNum(id%2);
 
 		//add all the modifiers (puts game into effect)
+		scene.modify(stateMod);
 		puckElem.modify(puckMovementMod);
 		if(playerId == 0) {
 			player1.modify(humanPlayerMod);
@@ -359,10 +377,8 @@ define(['libs/hardcore'], function (Animatron) {
 		opponentY = pos;
 	}
 
-	function sendCollisionData() {
+	function getPuckData() {
 		var data = {
-			id: playerId,
-			collision: {
 				vector: {
 					x: puck.vx,
 					y: puck.vy
@@ -373,25 +389,6 @@ define(['libs/hardcore'], function (Animatron) {
 				}
 			}
 		}
-		if(gameMode == GAME_MODE.networked) sendMessage(ws,"collision",data)
-	}
-
-	function sendPointScored() {
-		resetPuck();
-		var data = {
-			id: playerId,
-			puckInfo: {
-				vector: {
-					x: puck.vx,
-					y: puck.vy
-				},
-				pos: {
-					x: puck.x,
-					y: puck.y
-				}
-			}
-		}
-		if(gameMode == GAME_MODE.networked) sendMessage(ws,"point_scored",data)
 	}
 
 	pong.setNewScore = function(id,puckInfo) {
