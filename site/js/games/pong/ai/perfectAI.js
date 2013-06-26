@@ -1,8 +1,7 @@
 // An impossible-to-beat AI for pong!
-//
-// Author: Andrew Hollenbach
+define([], function () {
 
-var ai_perfect = (function() {
+var perfectAI = (function() {
     // puck contains information about the puck
     // x,y,vx,vy,radius
     var ai = function(puck,paddle) {
@@ -35,3 +34,6 @@ var ai_perfect = (function() {
 
     return ai;
 })();
+
+return perfectAI;
+});

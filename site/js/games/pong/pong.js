@@ -1,23 +1,24 @@
-define(['libs/hardcore',
-	    'games/pong/ai/humanAI'], function (Animatron, ai_human) {
+define(['libs/hardcore'], function (Animatron) {
 	/**********************CONSTANTS/GLOBAL VARS**********************/
-	//how far ahead the player looks for collisions
-	const PREDICT_SPAN = 1/150; //target:50fps
-	const SENTINEL = Math.pow(2,32) - 1;
-	const SEND_COLLISIONS = true;
-	//canvas size
-	const CANVAS = {
-		WIDTH: 800, 
-		HEIGHT: 450
-	}
-	//reference to canvas
-	var canvas = document.getElementById('game-canvas');
-	const defaultPos = [0,0];
+	var pong = {};
+	const PREDICT_SPAN 			= 1/150;                     // how far ahead the player looks for collisions
+	const SENTINEL 				= Math.pow(2,32) - 1;        // Deprecated?
+	const SEND_COLLISIONS 		= true;                      // Should send collisions?
+	const GAME_MODE 			= {
+										versusAI    : 1,     // Local AI opponent
+										versusHuman : 2,     // Local human opponent
+										networked   : 3      // Networked human opponent
+								  }
+	const defaultPos 			= [0,0];                     // For player positioning
+	var   gameMode              = null;                      // One of the GAME_MODEs
+	var   canvas                = null;						 // Reference to canvas
+	var   tLastPoint            = 0;                         // time the last point was scored
+	var   playerId              = 0;                         // Which side you are on, supplied by server
+	var   opponentY             = 0;                         // Position of opponent's paddle
+
+
+	// Animatron aliases
 	var b = Builder._$, C = anm.C;
-	//time the last point was scored
-	var tLastPoint = 0;
-	var playerId = 0;
-	var opponentY = 0;
 
 	/**************************MOUSE MOVEMENT**************************/
 	//save the current mouse position for reference
@@ -30,19 +31,18 @@ define(['libs/hardcore',
 		mousePos.y = evt.clientY - rect.top;
 	}
 
-	//add a listener for changes in mouse
-	var canvas = document.getElementById('game-canvas');
-	document.addEventListener('mousemove', function(evt) {
-		setMousePos(canvas, evt);
-	}, false);
-
+	function initMouseMovement() {
+		document.addEventListener('mousemove', function(evt) {
+			setMousePos(canvas, evt);
+		}, false);
+	}
 
 	/**************************PUCK PHYSICS**************************/
 	//default speed multiplier for puck
-	const DEFAULT_SPEED = 600; //pixels per second
-	const DEFAULT_ANGLE = Math.PI/6 //default starting angle
-	const DEFAULT_SPEED_MULT = 1.01;
-	const MAX_BOUNCE_ANGLE = Math.PI/3; //60 degrees
+	const DEFAULT_SPEED 		= 600; 		  // pixels per second
+	const DEFAULT_ANGLE 		= Math.PI/6   // default starting angle
+	const DEFAULT_SPEED_MULT 	= 1.01;       // By default how quickly puck speeds up
+	const MAX_BOUNCE_ANGLE 		= Math.PI/3;  // 60 degrees
 
 	var speedMultiplier = DEFAULT_SPEED_MULT; //for modifying multiplier over time
 
@@ -61,9 +61,9 @@ define(['libs/hardcore',
 	function bouncePuck(direction,t,player) {
 		switch(direction) {
 			case 'top':
-				puck.y = -CANVAS.HEIGHT/2 + puck.radius;
+				puck.y = -canvas.height/2 + puck.radius;
 			case 'bottom':
-				if (direction == 'bottom') puck.y = CANVAS.HEIGHT/2 - puck.radius; //doesn't re-assign if falling through from 'top'
+				if (direction == 'bottom') puck.y = canvas.height/2 - puck.radius; //doesn't re-assign if falling through from 'top'
 				puck.vy *= -speedMultiplier;
 				puck.vx *= speedMultiplier;
 				break;
@@ -127,33 +127,38 @@ define(['libs/hardcore',
 			p2ScoreText.unpaint(p2ScoreTextStyle);
 			p2ScoreText.paint(p2ScoreTextStyle = generateScoreStyle(3,++p2Score));
 		}
-		tLastPoint = pong.state.time;
+		tLastPoint = pongPlayer.state.time;
 		speedMultiplier = DEFAULT_SPEED_MULT;
 	}
 
 	
 	/**************************GAME ATTRIBUTES**************************/
-	//puck attributes
-	var velocity = getRandVelocity(true);
-	var puck = {
-		x: 		CANVAS.WIDTH/2,
-		y: 		CANVAS.HEIGHT/2,
-		vx: 	velocity.vx,
-		vy: 	velocity.vy,
-		radius: 14
+	var velocity, puck;
+	function initPuck() {
+		velocity = getRandVelocity(true);
+		puck = {
+			x: 		canvas.width/2,
+			y: 		canvas.height/2,
+			vx: 	velocity.vx,
+			vy: 	velocity.vy,
+			radius: 14
+		}
 	}
 
-	//paddle attributes
-	const paddle = {
-		width:  14,
-		height: 80,
-		offset: 10,
-		startY: CANVAS.HEIGHT/2
+	var paddle; // CONSTANT
+	var p1posX,p2posX,minY,maxY;
+	function initPaddles() {
+		paddle = {
+			width:  14,
+			height: 80,
+			offset: 10,
+			startY: canvas.height/2
+		}
+		p1posX 		= paddle.offset + paddle.width/2;
+		p2posX 		= canvas.width - paddle.offset - paddle.width/2; //all assumes upper right corner as root
+		minY = paddle.height/2;
+		maxY = canvas.height - paddle.height/2;
 	}
-	var p1posX 		= paddle.offset + paddle.width/2;
-	var p2posX 		= CANVAS.WIDTH - paddle.offset - paddle.width/2; //all assumes upper right corner as root
-	var minY = paddle.height/2;
-	var maxY = CANVAS.HEIGHT - paddle.height/2;
 
 	// clamps the paddle so it does not leave the canvas.
 	// all paddle mods (player/ai) should call this before setting
@@ -168,36 +173,25 @@ define(['libs/hardcore',
 		return yPos-paddle.startY;
 	}
 
-	/**************************AI**************************/
-	//TODO: Make this changable through UI
-	//var ai1 = new ai_human(puck, paddle,1);
-	//var ai2 = new ai_human(puck, paddle,2);
-	
 
 	/**************************MODIFIERS**************************/
 	//TODO: change to use built-in mousemove
 	var humanPlayerMod = function(t) {
 		var newPos = clamp(mousePos.y);
 		this.y = convertY(newPos);
-		sendMessage(ws,"paddle_location",{ id: playerId, location : this.y });
+		if(gameMode == GAME_MODE.networked) sendMessage(ws,"paddle_location",{ id: playerId, location : this.y });
 	}
 
-	var opponentMod = function(t) {
+	var networkMod = function(t) {
 		this.y = opponentY;
 	}
 
-	var ai1Mod = function(t) {
-        var newPos = ai1.move(puck) + paddle.startY;
+	var ai;
+	var aiMod = function(t) {
+        var newPos = ai.move(puck) + paddle.startY;
         newPos = clamp(newPos);
         this.y = convertY(newPos);
-        ai1.updPaddle(this.y);
-	}
-
-	var ai2Mod = function(t) {
-        var newPos = ai2.move(puck) + paddle.startY;
-        newPos = clamp(newPos);
-        this.y = convertY(newPos);
-        ai2.updPaddle(this.y);
+        ai.updPaddle(this.y);
 	}
 
 	var puckMovementMod = function(t) {
@@ -208,16 +202,16 @@ define(['libs/hardcore',
 		this.y = puck.y;
 
 		// Check for wall hits
-		if (puck.y - puck.radius < -CANVAS.HEIGHT/2) {
+		if (puck.y - puck.radius < -canvas.height/2) {
 			bouncePuck('top',t);
-		} else if(puck.y + puck.radius > CANVAS.HEIGHT/2) {
+		} else if(puck.y + puck.radius > canvas.height/2) {
 			bouncePuck('bottom',t);
 		}
 
 		// Check left or right wall (point scored)
-		if (puck.x - puck.radius < -CANVAS.WIDTH/2 || puck.x + puck.radius > CANVAS.WIDTH/2) {
+		if (puck.x - puck.radius < -canvas.width/2 || puck.x + puck.radius > canvas.width/2) {
 			var scoringPlayer = 1;
-			if(puck.x - puck.radius < -CANVAS.WIDTH/2) scoringPlayer = 2 //score on left, player 2 point
+			if(puck.x - puck.radius < -canvas.width/2) scoringPlayer = 2 //score on left, player 2 point
 			else scoringPlayer = 1;
 			addPoint(scoringPlayer,t);
 		}
@@ -231,47 +225,48 @@ define(['libs/hardcore',
 	var overlayColor 		= '#000';
 	var overlayButtonColor 	= '#EEE';
 
-	var p1ScoreText = b('p1ScoreText'), p2ScoreText = b('p2ScoreText');
-
 	function generateScoreStyle(location,text) {
 		return  function(ctx) {
 			      ctx.fillStyle = '#444';
 			      ctx.font = '30pt sans-serif';
-			      ctx.fillText(text, CANVAS.WIDTH*location/4, 50);
+			      ctx.fillText(text, canvas.width*location/4, 50);
 				}
 	}
+	var p1ScoreText, p2ScoreText;
 	var p1ScoreTextStyle, p2ScoreTextStyle;
 	
 
 	/**************************SCENE CREATION**************************/
-	//Animatron player declarations
-	anm.M[C.MOD_COLLISIONS].predictSpan = PREDICT_SPAN;
+	var player1,player2,puckElem, overlay, overlayButton,scene,pongPlayer;
+	function buildScene() {
+		anm.M[C.MOD_COLLISIONS].predictSpan = PREDICT_SPAN;
+		p1ScoreText = b('p1ScoreText'); p2ScoreText = b('p2ScoreText');
 
-	var player1 = b('player1'), player2 = b('player2'), puckElem = b('puck');
-	var overlay = b("overlay").rect([CANVAS.WIDTH/2, CANVAS.HEIGHT/2], [CANVAS.WIDTH, CANVAS.HEIGHT])
-				              .fill(overlayColor)
-				              .alpha([0,SENTINEL],[.7,.7])
-				              
-	var overlayButton = b("overlayButton")
-							.rect([CANVAS.WIDTH/2, CANVAS.HEIGHT/2], [200, 100])
+		player1 = b('player1'); player2 = b('player2'); puckElem = b('puck');
+		overlay = b("overlay").rect([canvas.width/2, canvas.height/2], [canvas.width, canvas.height])
+					          .fill(overlayColor)
+					          .alpha([0,SENTINEL],[.7,.7])
+					              
+		overlayButton = b("overlayButton")
+							.rect([canvas.width/2, canvas.height/2], [200, 100])
 							.fill(overlayButtonColor)
-							.paint(function(ctx) {
-								ctx.fillStyle = '#222';
-								ctx.font = '30pt sans-serif';
-								ctx.fillText("START", -100+35, 0+15);
-							})
+							.add(
+								b('startButton')
+									.text([-100+35, 0+15],"START",30,"sans-serif")
+									.fill('#222')
+							)
 							.on(C.X_MCLICK, function(evt,t) {
-								sendMessage(ws,ClientMessage.CONFIRMATION);
+								if(gameMode == GAME_MODE.networked) sendMessage(ws,ClientMessage.CONFIRMATION);
 
 								overlay.alpha([t,t+1], [.7,0]) //fade to transparent for 1s, then stay that way
 								overlay.alpha([t+1,SENTINEL], [0,0])
 								//overlay.disable();
 								overlayButton.disable();
 								//hide cursor
-								document.getElementById('game-canvas').style.cursor = 'none';
+								canvas.style.cursor = 'none';
 							});
 
-	var scene = b('scene')
+		scene = b('scene')
 				    .add(
 				 		player1.rect([p1posX,paddle.startY], [paddle.width,paddle.height])
 						   	   .fill(player1Color))
@@ -280,48 +275,73 @@ define(['libs/hardcore',
 					   		   .fill(player2Color))
 				    .add(
 						puckElem.circle([puck.x,puck.y], puck.radius)
-		  		   		    .fill(puckColor))
+		  		   		        .fill(puckColor))
 				    .add(
 					    p1ScoreText.paint(p1ScoreTextStyle = generateScoreStyle(1,p1Score)))
 				    .add(
 					    p2ScoreText.paint(p2ScoreTextStyle = generateScoreStyle(3,p2Score)));
 
-	puckElem.modify(function(t) {
-		     this.$.collides(player1.v, function() {
-		     	bouncePuck('left',t,player1.v.state);
-		        //TODO: send new vector
-		     })
-		  })
-		 .modify(function(t) {
-		     this.$.collides(player2.v, function() {
-		     	bouncePuck('right',t,player2.v.state);
-		        //TODO: send new vector
-		     })
-		  });
-	puck.x = 0; 
-	puck.y = 0;
+		puckElem.modify(function(t) {
+			     this.$.collides(player1.v, function() {
+			     	bouncePuck('left',t,player1.v.state);
+			        //TODO: send new vector
+			     })
+			  })
+			 .modify(function(t) {
+			     this.$.collides(player2.v, function() {
+			     	bouncePuck('right',t,player2.v.state);
+			        //TODO: send new vector
+			     })
+			  });
+		puck.x = 0;
+		puck.y = 0;
 
-	//make the game only check the inner-facing wall for collisions
-	player1.v.reactAs(Builder.path([[paddle.width/2,-paddle.height/2],[paddle.width/2,paddle.height/2]]));
-	player2.v.reactAs(Builder.path([[-paddle.width/2,-paddle.height/2],[-paddle.width/2,paddle.height/2]]));
+		//make the game only check the inner-facing wall for collisions
+		player1.v.reactAs(Builder.path([[paddle.width/2,-paddle.height/2],[paddle.width/2,paddle.height/2]]));
+		player2.v.reactAs(Builder.path([[-paddle.width/2,-paddle.height/2],[-paddle.width/2,paddle.height/2]]));
 
 
-	var pong = createPlayer('game-canvas', {
-		//"debug"  : true,
-		"mode" : C.M_DYNAMIC,
-		"anim" : {
-			"fps": 50, //doesn't actually work
-			"width" : CANVAS.WIDTH,
-			"height" : CANVAS.HEIGHT,
-			"bgfill" : { color : "#FFF" }
-		} 
-	}).load(scene);
-	scene.add(overlay);
-	scene.add(overlayButton);
-	pong.play();
+		pongPlayer = createPlayer('game-canvas', {
+			//"debug"  : true,
+			"mode" : C.M_DYNAMIC,
+			"anim" : {
+				"fps": 50, //doesn't actually work
+				"width" : canvas.width,
+				"height" : canvas.height,
+				"bgfill" : { color : "#FFF" }
+			} 
+		}).load(scene);
+		scene.add(overlay);
+		scene.add(overlayButton);
+		pongPlayer.play();
+	}
+
+
+	var opponentMod;
+	pong.initGame = function(mode,aiName) {
+		canvas = document.getElementById('game-canvas');
+		initMouseMovement();
+		initPuck();
+		initPaddles();
+		buildScene();
+
+		if(mode == GAME_MODE.versusAI) {
+			require(["games/pong/ai/" + aiName], function(aiModule) {
+				gameMode = GAME_MODE.versusAI
+				ai = new aiModule(puck, paddle);
+				opponentMod = aiMod;
+			});
+		} else {
+			gameMode = mode;
+			opponentMod = networkMod;
+			// Establish connection to game server
+		}
+	}
 
 	pong.startGame = function(id) {
 		playerId = id;
+		if(mode == GAME_MODE.versusAI) ai.setPlayerNum(id%2);
+
 		//add all the modifiers (puts game into effect)
 		puckElem.modify(puckMovementMod);
 		if(playerId == 0) {
@@ -331,8 +351,6 @@ define(['libs/hardcore',
 			player1.modify(opponentMod);
 			player2.modify(humanPlayerMod);
 		}
-		// player1.on(C.X_MMOVE, movePaddle);
-		// player2.on(C.X_MMOVE, movePaddle);
 		//set current time to start time
 		tLastPoint = pong.state.time;
 	}
@@ -355,7 +373,7 @@ define(['libs/hardcore',
 				}
 			}
 		}
-		sendMessage(ws,"collision",data)
+		if(gameMode == GAME_MODE.networked) sendMessage(ws,"collision",data)
 	}
 
 	function sendPointScored() {
@@ -373,7 +391,7 @@ define(['libs/hardcore',
 				}
 			}
 		}
-		sendMessage(ws,"point_scored",data)
+		if(gameMode == GAME_MODE.networked) sendMessage(ws,"point_scored",data)
 	}
 
 	pong.setNewScore = function(id,puckInfo) {

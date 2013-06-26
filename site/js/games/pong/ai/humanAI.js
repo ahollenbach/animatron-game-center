@@ -1,8 +1,7 @@
 // A somewhat-human AI for pong!
-//
-// Author: Andrew Hollenbach
+define([], function () {
 
-var ai_human = (function() {
+var humanAI = (function() {
     var MAX_SPEED = 5; // 10px/frame
 
     // Puck contains information about the puck
@@ -55,3 +54,6 @@ var ai_human = (function() {
 
     return ai;
 })();
+
+return humanAI;
+});
