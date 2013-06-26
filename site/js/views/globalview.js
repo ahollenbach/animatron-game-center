@@ -217,8 +217,6 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
             this.game.on('end', function (json) {
             });
 
-
-
             this.chat.emit('connection_success', username);
         }
     });

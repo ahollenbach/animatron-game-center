@@ -11,7 +11,7 @@ var UserListView = Backbone.View.extend({
     el : ".bar.middle",
     url : "/api/users",
 
-    curGameId : 0,
+    currentGameName : "???",
     selectedUsers : [],
     acceptedUsers : [],
     username : null,
@@ -61,15 +61,15 @@ var UserListView = Backbone.View.extend({
         this.illuminateIcon($(evt.toElement));
     },
     invitePlayers : function(e) {
-        // curGameId will be changed at some point
+        // currentGameName will be changed at some point
         this.selectedUsers.map(function(username) {
             console.log("username: " + username);
-            globalEvents.trigger('sendInvite', username, this.curGameId);
+            globalEvents.trigger('sendInvite', username, this.currentGameName);
         }, this);
     },
     setView : function(evt) {
-        var evtId = evt.attributes._id;
-        if(evtId != this.curGameId) {
+        var gameName = evt.attributes.name;
+        if(gameName != this.currentGameName) {
             this.collection.fetch({ 
                 url   : "/api/users",
                 reset : true 
@@ -77,7 +77,7 @@ var UserListView = Backbone.View.extend({
             this.render(evt);
             // Autoselect 1 player
             this.illuminateIcon($('#1p'));
-            this.curGameId = evtId;
+            this.currentGameName = gameName;
         }
     },
     addUser : function(username) {
