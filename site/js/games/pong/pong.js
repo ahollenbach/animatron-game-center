@@ -318,6 +318,9 @@ define(['libs/hardcore'], function (Animatron) {
 
 
 	var opponentMod;
+	// Socket.io stuff, which will only be initialized if we're networked
+	var io;
+	var socketConnection;
 	pong.initGame = function(mode,aiName) {
 		canvas = document.getElementById('game-canvas');
 		initMouseMovement();
@@ -331,10 +334,12 @@ define(['libs/hardcore'], function (Animatron) {
 				ai = new aiModule(puck, paddle);
 				opponentMod = aiMod;
 			});
-		} else {
+		} else if (mode == GAME_MODE.networked) {
 			gameMode = mode;
 			opponentMod = networkMod;
-			// Establish connection to game server
+
+			io = require('socketio');
+			socketConnection = io.connect(window.location.origin + "/game");
 		}
 	}
 
