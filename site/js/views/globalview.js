@@ -11,12 +11,16 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
 
         timeFormat : "[(]h:mm:ss A[)] ",
 
+        inviteTemplate  : Handlebars.compile(getTemplate("invite-template")),
+        waitingTemplate : Handlebars.compile(getTemplate("waiting-template")),
+
         // Socket.io stuff
-        baseURL : window.location.origin,
-        chat   : null,
-        invite : null,
-        gameConn : null,
+        baseURL  : window.location.origin,
+        chat     : null,
+        invite   : null,
         game     : null,
+
+        canAcceptInvites : true,
 
         // Function overrides
         initialize : function(args) {
@@ -27,6 +31,7 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
             //=============================================================================
             globalEvents.on('gameSelectEvent', this.setGame, this);
             globalEvents.on('gameLaunchEvent', this.launchGame, this);
+            globalEvents.on('sendInvite', this.sendInvite, this);
 
             new GalleryView();
             new UserListView();
@@ -40,8 +45,6 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
             'click #chatToggle'     : 'toggleChat',
             'click #login button'   : 'login',
             'click .playerIcon'     : 'selectPlayers',
-            'click .popup accept'   : 'acceptInvite',
-            'click .popup decline'  : 'declineInvite',
 
             'keydown #chat-message' : 'sendChatMessage'
         },
@@ -70,7 +73,9 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
                 console.dir(jqXHR);
 
                 that.username = username;
-                that.toggleDropdown(null);
+                globalEvents.trigger("usernameSet", username);
+
+                that.toggleDropdown();
                 that.configureSockets(username);
             });
         },
@@ -91,15 +96,12 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
         },
         setGame : function(evt) {
         },
-        launchGame : function(evt) {
+        launchGame : function(modelJSON, otherPlayers) {
+            this.game.emit('initiate', modelJSON, otherPlayers);
         },
-        acceptInvite : function() {
-            this.invite.emit('accept');
+        sendInvite : function(username, gameId) {
+            this.invite.emit('send', username, gameId);
         },
-        declineInvite : function() {
-            this.invite.emit('decline');
-        },
-        
         
         // helpers
         setWidths : function (evt) {
@@ -139,7 +141,7 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
                 'sync disconnect on unload' : true
             });
             this.invite = io.connect(this.baseURL + "/invite");
-            this.gameConn = io.connect(this.baseURL + "/game");
+            this.game = io.connect(this.baseURL + "/game");
 
             var that = this;
 
@@ -171,19 +173,48 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
             //TODO: On invite received:
             // data has to have inviter and game attributes
             // Also check the listeners
-            var template = Handlebars.compile(getTemplate("invite-template"));
-            this.$el.append(template(data));
+            this.invite.on('received', function(inviter, gameName){
+                if (that.canAcceptInvites) {
+                    that.canAcceptInvites = false;
+                    console.log(inviter + " has invited you to play " + gameName);
+                    
+                    that.toggleChat();
+                    window.focus();
+                    that.$el.append(that.inviteTemplate({ inviter : inviter, game : gameName }));
 
+                    var popup = $("div.curtain");
+                    popup.on('click', 'button[value="accept"]', { socket : that.invite }, function(e) {
+                        e.data.socket.emit('accept', inviter, gameName);
+                        $(".invite.popup").html(that.waitingTemplate({ host : inviter }));
+                    });
+                    popup.on('click', 'button[value="decline"]', { socket : that.invite }, function(e) {
+                        e.data.socket.emit('decline', inviter, gameName);
+                        console.log("hello, declined");
+                        popup.remove();
+                    });  
+                } else {
+                    that.invite.emit('decline', inviter, gameName);
+                }
+            });
+
+            this.invite.on('accepted', function(invitee, gameName) {
+                console.log(invitee + " accepted your invite");
+                globalEvents.trigger('userAccepted', invitee);
+            });
+
+            this.invite.on('declined', function(invitee, gameName) {
+
+            });
 
             // Assign listeners for game socket
-            this.gameConn.on('load', function (opponentUsername) {
-                //game = initGame();
+            this.game.on('load', function (modelJSON) {
+                globalEvents.trigger('toSessionView', modelJSON);
             });
-            this.gameConn.on('start', function (opponentId) {
+            this.game.on('start', function (opponentId) {
             });
-            this.gameConn.on('state', function (json) {
+            this.game.on('state', function (json) {
             });
-            this.gameConn.on('end', function (json) {
+            this.game.on('end', function (json) {
             });
 
 

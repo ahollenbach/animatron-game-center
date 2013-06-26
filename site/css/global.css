@@ -272,6 +272,13 @@ ul#user-list  {
     background-repeat: no-repeat;
     background-position: 5% 50%;
 }
+.user.accepted {
+    color: #F3F3F3;
+    background-color: rgba(33, 50, 65, 0.9);
+    background-image: url(../assets/checkmark-green.png);
+    background-repeat: no-repeat;
+    background-position: 5% 50%;
+}
 
 
 /*=======================================================*/

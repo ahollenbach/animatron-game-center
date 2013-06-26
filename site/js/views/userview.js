@@ -1,8 +1,8 @@
 define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
-    var GameView = Backbone.View.extend({
+    var UserView = Backbone.View.extend({
         // Tag definition
         tagName : 'li',
-        className : 'user',
+            className : 'user',
 
         // Template definition
         nameTemplate : Handlebars.compile(getTemplate("user-template")),
@@ -29,5 +29,5 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
         } 
     });
 
-    return GameView;
+    return UserView;
 });

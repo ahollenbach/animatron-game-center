@@ -19,7 +19,7 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
             'click button#start': 'launchGame',
         },
         launchGame : function(evt) {
-            globalEvents.trigger('gameLaunchEvent', modelJSON);
+            globalEvents.trigger('finalizePlayers', modelJSON);
         },
         setView : function(evt) {
             modelJSON = evt.attributes;

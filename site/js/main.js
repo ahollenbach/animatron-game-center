@@ -54,7 +54,6 @@ require(
             return accum;
         });
 
-
         new GlobalView();
     });
 

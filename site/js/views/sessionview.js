@@ -9,7 +9,7 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
 
         // Function overrides
         initialize : function(args) {
-            globalEvents.on('gameLaunchEvent', this.setView, this);
+            globalEvents.on('toSessionView', this.setView, this);
         },
         render : function() {
             this.$el.html(this.template(modelJSON));

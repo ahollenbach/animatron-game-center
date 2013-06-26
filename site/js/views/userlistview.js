@@ -1,10 +1,11 @@
 define([
     "backbone",
+    "jquery",
     "handlebars",
     "socketio",
     "views/userview",
     "collections/userlist"
-  ], function (Backbone, Handlebars, io, UserView, UserList) {
+  ], function (Backbone, $, Handlebars, io, UserView, UserList) {
 
 var UserListView = Backbone.View.extend({
     el : ".bar.middle",
@@ -12,6 +13,8 @@ var UserListView = Backbone.View.extend({
 
     curGameId : 0,
     selectedUsers : [],
+    acceptedUsers : [],
+    username : null,
 
     // Socket io connection
     invite : null,
@@ -20,18 +23,14 @@ var UserListView = Backbone.View.extend({
 
     // Function overrides
     initialize : function() {
-        this.invite = io.connect(window.location.origin + "/invite");
-
-        this.invite.on('received', function(inviter, gameName){
-            // TODO: Alert about received invite and ask if they will accept
-            console.log(inviter + " has invited you to play " + gameName);
-        });
-
         // Global events
         globalEvents.on('gameSelectEvent', this.setView, this);
         globalEvents.on('userConnected', this.addUser, this);
         globalEvents.on('userDisconnected', this.removeUser, this);
         globalEvents.on('inviteeSelected', this.updateSelectedUsers, this);
+        globalEvents.on('usernameSet', this.setUsername, this);
+        globalEvents.on('userAccepted', this.updateAcceptedUsers, this);
+        globalEvents.on('finalizePlayers', this.finalizePlayers, this);
 
         this.collection = new UserList();
         this.listenTo(this.collection, 'add', this.renderUser);
@@ -42,16 +41,21 @@ var UserListView = Backbone.View.extend({
         if(evt.attributes) this.$el.html(this.template(evt.attributes)); //add num player select
         else $('#user-list').html("");
         this.collection.each(function(user) { // then players?
-            this.renderUser(user);
+            if (user.get("username") != this.username)
+                this.renderUser(user);
         }, this);
     },
     // Helper functions
     renderUser : function(user) {
         $('#user-list').append((new UserView({ model : user })).render().el);
     },
+
     events: {
         'click .playerIcon'   : 'setPlayerIcons',
-        'click button#invite' : 'invitePlayers'
+        'click button#invite' : 'invitePlayers',
+
+        'click .popup accept'   : 'acceptInvite',
+        'click .popup decline'  : 'declineInvite', 
     },
     setPlayerIcons : function(evt) {
         this.illuminateIcon($(evt.toElement));
@@ -60,13 +64,16 @@ var UserListView = Backbone.View.extend({
         // curGameId will be changed at some point
         this.selectedUsers.map(function(username) {
             console.log("username: " + username);
-            this.invite.emit('send', username, this.curGameId);
+            globalEvents.trigger('sendInvite', username, this.curGameId);
         }, this);
     },
     setView : function(evt) {
         var evtId = evt.attributes._id;
         if(evtId != this.curGameId) {
-            this.collection.fetch({ url : "/api/users", reset : true });
+            this.collection.fetch({ 
+                url   : "/api/users",
+                reset : true 
+            });
             this.render(evt);
             // Autoselect 1 player
             this.illuminateIcon($('#1p'));
@@ -87,6 +94,21 @@ var UserListView = Backbone.View.extend({
             this.selectedUsers.push(username);
         else
             this.selectedUsers.splice(index, 1);
+    },
+    setUsername : function(username) {
+        this.username = username;
+    },
+    updateAcceptedUsers : function(username) {
+        var index = this.acceptedUsers.indexOf(username);
+        if (index == -1) {
+            this.acceptedUsers.push(username);
+            var user = $("li#" + username);
+            user.toggleClass('accepted', true);
+            console.log(user);
+        }
+    },
+    finalizePlayers : function(modelJSON) {
+        globalEvents.trigger("gameLaunchEvent", modelJSON, this.acceptedUsers);
     },
 
     illuminateIcon : function(elm) {

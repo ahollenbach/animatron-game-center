@@ -35,20 +35,26 @@ var UserList = (function() {
         var users = {};
 
         this.add = function(username, id) {
-            users[username] = { id : id, inGame : false };
+            users[username] = { id : id, gameId : -1 };
         };
 
         this.remove = function(username) {
             delete users[username];
         };
 
-        this.setInGame = function(username, inGame) {
+        this.setGameId = function(username, gameId) {
             if (username.hasOwnProperty(username))
-                users[username].inGame = inGame;
+                users[username].gameId = gameId;
+        };
+
+        this.getGameId = function(username) {
+            if (username.hasOwnProperty(username))
+                return users[username].gameId;
+            return null;
         };
 
         this.isInGame = function(username) {
-            return users[username].inGame;
+            return users[username].gameId != -1;
         };
 
         this.getId = function(username) {
@@ -61,7 +67,7 @@ var UserList = (function() {
             for (var u in users)
                 list.push(new UserModel({
                     username : u,
-                    inGame : users[u].inGame
+                    inGame : users[u].gameId != -1
                 }));
 
             return list;
@@ -73,11 +79,98 @@ var UserList = (function() {
 
 // TODO: Modularize this code
 //=============================================================================
-// Pong Game Module
+// Game Session List Module 
 // Temporary location - will be modularized later
 //=============================================================================
+var GameSession = (function() {
+    var nextID = 0;
 
+    // Constructor
+    var c = function(type, players) {
+        this.type = type;
+        this.players = players;
+        this.game = null;
 
+        this.id = nextID++;
+        this.confirmations = {};
+
+        for (var i = 0; i < this.players.length; i++)
+            this.confirmations[this.players[i]] = false;
+
+        // Returns true if all players have confirmed
+        this.allConfirmed = function() {
+            var confirmationStatus = true;
+
+            for (var i = 0; confirmationStatus && i < this.players.length; i++)
+                confirmationStatus = this.confirmations[this.players[i]];
+
+            return confirmationStatus;
+        };
+    };
+
+    c.prototype = {
+        
+    };
+
+    return c;
+})();
+
+var GameSessionList = (function() {
+    // Constructor
+    var c = function() {
+        var gameSessions = {};
+        var numberOfGames = 0;
+
+        this.size = function() { return numberOfGames; };
+
+        this.addGameSession = function(type, players) {
+            var session = new GameSession(type, players);
+            gameSessions[session.id] = session;
+
+            return session.id;
+        };
+
+        this.removeGameSession = function(id) {
+            delete gameSessions[id];
+        };
+
+        this.getConfirmationStatus = function(id) {
+            return gameSessions[id].allConfirmed();
+        };
+
+        this.addConfirmation = function(id, player) {
+            gameSessions[id].confirmations[player] = true;
+        };
+
+        this.getByType = function(type) {
+            var sessionsOfType = [];
+
+            for (var gameSession in gameSessions)
+                if (gameSession.type == type)
+                    sessionsOfType.push(gameSession);
+
+            return gameSession;
+        };
+
+        this.getPlayers = function(id) {
+            return gameSessions[id].players;
+        };
+
+        this.getType = function(id) {
+            return gameSessions[id].type;
+        };
+
+        this.processState = function(id, playerId, state) {
+            gameSessions[id].game.updateState(playerId, state);
+        };
+    };
+
+    c.prototype = {
+        
+    };
+
+    return c;
+})();
 
 //=============================================================================
 // Actual Server Stuff
@@ -88,6 +181,7 @@ var express = require( 'express' ), //Web framework
 
 var usernameValidator = /^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/;
 var onlineUsers = new UserList();
+var gameSessions = new GameSessionList();
 
 // Create server
 var app = express(),
@@ -259,9 +353,81 @@ invite.on('connection', function(socket) {
 
     socket.on('accept', function(inviter, gameName) {
         // TODO: Add bot users to a room of some sort
+        socket.get("username", function(error, invitee) {
+            var id = onlineUsers.getId(inviter);
+            invite.socket(id).emit('accepted', invitee, gameName);
+        });
     });
 
-    socket.on('decline', function(invitee, gameName) {
-        // TODO: Allow user to invite another user        
+    socket.on('decline', function(inviter, gameName) {
+        // TODO: Allow user to invite another user 
+        socket.get("username", function(error, invitee) {
+            var id = onlineUsers.getId(inviter);
+            invite.socket(id).emit('declined', invitee, gameName);
+        });   
     });
 });
+
+// Game namespace
+game.on('connection', function(socket) {
+    socket.on('initiate', function(gameData, players) {
+        socket.get("username", function(error, username) {
+            players.splice(0, 0, username);
+            var id = gameSessions.addGameSession(gameData.name, players);
+
+            players.forEach(function(player) {
+                onlineUsers.setGameId(player, id);
+                var socketId = onlineUsers.getId(player);
+                game.socket(socketId).join(id);
+            });
+
+            game.in(id).emit('load', gameData);
+        });
+    });
+
+    socket.on('confirmation', function() {
+        socket.get("username", function(error, username) {
+            var id = onlineUsers.getGameId(username);
+            gameSessions.addConfirmation(id, username);
+
+            if (gameSessions.getConfirmationStatus(id)) {
+                // Will change to be dynamic, for now, just Pong
+                var game = new Pong(gameSessions.getPlayers(id), id);
+                game.init();
+            }
+        });
+    });
+
+    socket.on('state', function(id, state) {
+        socket.get("username", function(error, username) {
+            gameSessions.processState(onlineUsers.getGameId(username), id, state);
+        });
+    });
+});
+
+// TODO: Modularize this code
+//=============================================================================
+// Pong Game Module
+// Temporary location - will be modularized later
+//=============================================================================
+var Pong = (function() {
+    var c = function(p, r) {
+        var players = p;
+        var room = r;
+
+        this.init = function() {
+            players.forEach(function(player, id) {
+                game.in(room).emit('start', id);
+            });
+        }
+
+        this.updateState = function(id, state) {
+            game
+                .socket(onlineUsers.getId(players[id]))
+                .broadcast.to(room)
+                .emit('state', id, state);
+        };
+    };
+
+    return c;
+})();
