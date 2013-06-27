@@ -1,11 +1,12 @@
 {
     "name" : "animatron-game-center",
     "version" : "0.0.1",
-    "description" : "A simple library application using Backbone",
+    "description" : "A portal to games created using the Animatron Player.",
     "dependencies" : {
         "express" : "3.x",
         "path" : "0.x",
         "mongoose" : "3.x",
-        "socket.io" : "0.9.x"
+        "socket.io" : "0.9.x",
+        "rekuire" : "0.0.10"
     }
 }

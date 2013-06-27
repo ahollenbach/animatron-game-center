@@ -1,180 +1,10 @@
-//=============================================================================
-// Mongoose/MongoDB
-//=============================================================================
-var mongoose = require('mongoose');
+var database = require('database');
+var UserModel = database.UserModel;
+var GameModel = database.GameModel;
 
-// Connect to database
-mongoose.connect('mongodb://192.168.40.73:27017/gamecenter');
-
-// Define schemas
-var Game = new mongoose.Schema({
-    name : String,
-    developers : String,
-    created : Date, 
-    singlePlayer : Boolean,
-    multiPlayer : Boolean
-}, { collection : "games" });
-
-var User = new mongoose.Schema({
-    username : String,
-    inGame : Boolean
-}, { collection : "users" });
-
-// Define models
-var GameModel = mongoose.model('Game', Game);
-var UserModel = mongoose.model('User', User);
-
-// TODO: Modularize this code
-//=============================================================================
-// User List Module
-// Temporary location - will be modularized later
-//=============================================================================
-var UserList = (function() {
-    // Constructor
-    var c = function() {
-        var users = {};
-
-        this.add = function(username, id) {
-            users[username] = { id : id, gameId : -1 };
-        };
-
-        this.remove = function(username) {
-            delete users[username];
-        };
-
-        this.setGameId = function(username, gameId) {
-            if (users.hasOwnProperty(username))
-                users[username].gameId = gameId;
-        };
-
-        this.getGameId = function(username) {
-            if (users.hasOwnProperty(username))
-                return users[username].gameId;
-            return null;
-        };
-
-        this.isInGame = function(username) {
-            return users[username].gameId != -1;
-        };
-
-        this.getId = function(username) {
-            return users[username].id;
-        };
-
-        this.retrieve = function() {
-            var list = [];
-
-            for (var u in users)
-                list.push(new UserModel({
-                    username : u,
-                    inGame : users[u].gameId != -1
-                }));
-
-            return list;
-        };
-    };
-    
-    return c;
-})();
-
-// TODO: Modularize this code
-//=============================================================================
-// Game Session List Module 
-// Temporary location - will be modularized later
-//=============================================================================
-var GameSession = (function() {
-    var nextID = 0;
-
-    // Constructor
-    var c = function(type, players) {
-        this.type = type;
-        this.players = players;
-        this.game = null;
-
-        this.id = nextID++;
-        this.confirmations = {};
-
-        for (var i = 0; i < this.players.length; i++)
-            this.confirmations[this.players[i]] = false;
-
-        // Returns true if all players have confirmed
-        this.allConfirmed = function() {
-            var confirmationStatus = true;
-
-            for (var i = 0; confirmationStatus && i < this.players.length; i++)
-                confirmationStatus = this.confirmations[this.players[i]];
-
-            return confirmationStatus;
-        };
-    };
-
-    c.prototype = {
-        
-    };
-
-    return c;
-})();
-
-var GameSessionList = (function() {
-    // Constructor
-    var c = function() {
-        var gameSessions = {};
-        var numberOfGames = 0;
-
-        this.size = function() { return numberOfGames; };
-
-        this.addGameSession = function(type, players) {
-            var session = new GameSession(type, players);
-            gameSessions[session.id] = session;
-
-            return session.id;
-        };
-
-        this.removeGameSession = function(id) {
-            delete gameSessions[id];
-        };
-
-        this.getConfirmationStatus = function(id) {
-            return gameSessions[id].allConfirmed();
-        };
-
-        this.addConfirmation = function(id, player) {
-            gameSessions[id].confirmations[player] = true;
-        };
-
-        this.getByType = function(type) {
-            var sessionsOfType = [];
-
-            for (var gameSession in gameSessions)
-                if (gameSession.type == type)
-                    sessionsOfType.push(gameSession);
-
-            return gameSession;
-        };
-
-        this.getPlayers = function(id) {
-            return gameSessions[id].players;
-        };
-
-        this.getType = function(id) {
-            return gameSessions[id].type;
-        };
-
-        this.setGame = function(id, game) {
-            gameSessions[id].game = game;
-        }
-
-        this.processState = function(id, playerId, state) {
-            gameSessions[id].game.updateState(playerId, state);
-        };
-    };
-
-    c.prototype = {
-        
-    };
-
-    return c;
-})();
+var lists = require('lists');
+var UserList = lists.UserList;
+var GameSessionList = lists.GameSessionList;
 
 //=============================================================================
 // Actual Server Stuff
@@ -396,6 +226,7 @@ game.on('connection', function(socket) {
 
             if (gameSessions.getConfirmationStatus(id)) {
                 // Will change to be dynamic, for now, just Pong
+                var Pong = require("pong");
                 var game = new Pong(gameSessions.getPlayers(id), id);
                 gameSessions.setGame(id, game);
                 game.init();
@@ -410,30 +241,3 @@ game.on('connection', function(socket) {
         });
     });
 });
-
-// TODO: Modularize this code
-//=============================================================================
-// Pong Game Module
-// Temporary location - will be modularized later
-//=============================================================================
-var Pong = (function() {
-    var c = function(p, r) {
-        var players = p;
-        var room = r;
-
-        this.init = function() {
-            players.forEach(function(player, id) {
-                game.socket(onlineUsers.getId(player)).emit('start', id);
-            });
-        }
-
-        this.updateState = function(id, state) {
-            game
-                .socket(onlineUsers.getId(players[id]))
-                .broadcast.to(room)
-                .emit('state', id, state);
-        };
-    };
-
-    return c;
-})();
