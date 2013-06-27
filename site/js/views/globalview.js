@@ -97,7 +97,10 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
         setGame : function(evt) {
         },
         launchGame : function(modelJSON, otherPlayers) {
-            this.game.emit('initiate', modelJSON, otherPlayers);
+            if (otherPlayers.length != 0)
+                this.game.emit('initiate', modelJSON, otherPlayers);
+            else
+                globalEvents.trigger('toSessionView', 1, modelJSON);
         },
         sendInvite : function(username, gameId) {
             this.invite.emit('send', username, gameId);
@@ -203,12 +206,12 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
             });
 
             this.invite.on('declined', function(invitee, gameName) {
-
+                // TODO: Alert host that the user has declined
             });
 
             // Assign listeners for game socket
             this.game.on('load', function (modelJSON) {
-                globalEvents.trigger('toSessionView', modelJSON);
+                globalEvents.trigger('toSessionView', 3, modelJSON);
             });
             this.game.on('start', function (opponentId) {
             });

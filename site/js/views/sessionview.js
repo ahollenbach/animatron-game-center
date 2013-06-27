@@ -15,7 +15,7 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
             this.$el.html(this.template(modelJSON));
             return this;
         },
-        setView : function(json) {
+        setView : function(gameMode, json) {
             modelJSON = json;
             this.render();
             this.$el.addClass("rendered");
@@ -24,6 +24,8 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
             var gameName = json.name.toLowerCase(); // 'games/' + gameName + "/" + gameName + '.js'
             require(['games/pong/pong'], function(pong) {
                 console.log(pong);
+
+                pong.initGame(gameMode, "perfectAI.js");
             });
 
             $('#session-page').css({'left':window.innerWidth})

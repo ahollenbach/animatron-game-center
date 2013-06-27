@@ -92,6 +92,8 @@ define(['libs/hardcore'], function (Animatron) {
 		puck.vy = newVectors.vy;
 		puck.vx *= speedMultiplier;
 		puck.vy *= speedMultiplier;
+
+		collided = true;
 	}
 
 	function toComponentVectors(speed,angle) {
@@ -118,10 +120,12 @@ define(['libs/hardcore'], function (Animatron) {
 		if(playerNum == playerId+1) {
 			resetPuck();
 			scored = true;
+			updateScore(playerNum)
 		}
 	}
 
 	function updateScore(playerNum) {
+		console.log(playerNum, "scored")
 		if(playerNum == 1) {
 			p1ScoreText.unpaint(p1ScoreTextStyle);
 			p1ScoreText.paint(p1ScoreTextStyle = generateScoreStyle(1,++p1Score));
@@ -181,7 +185,7 @@ define(['libs/hardcore'], function (Animatron) {
 	var humanPlayerMod = function(t) {
 		var newPos = clamp(mousePos.y);
 		this.y = convertY(newPos);
-		if(gameMode == GAME_MODE.networked) sendMessage(ws,"paddle_location",{ id: playerId, location : this.y });
+		// if(gameMode == GAME_MODE.networked) sendMessage(ws,"paddle_location",{ id: playerId, location : this.y });
 	}
 
 	var networkMod = function(t) {
@@ -214,26 +218,27 @@ define(['libs/hardcore'], function (Animatron) {
 		if (puck.x - puck.radius < -canvas.width/2 || puck.x + puck.radius > canvas.width/2) {
 			var scoringPlayer = 1;
 			if(puck.x - puck.radius < -canvas.width/2) scoringPlayer = 2 //score on left, player 2 point
-			else scoringPlayer = 1;
 			addPoint(scoringPlayer,t);
 		}
 	}
 
 	var stateMod = function(t) {
+		//console.log(player1, player2)
 		var state = {
-			id      : playerId,
-			pos     : (playerId == 0) ? player1.y : player2.y
+			// id      : playerId,
+			pos     : (playerId == 0) ? player1.v.state.y : player2.v.state.y
 			//puck    : getPuckData()
-		}
+		};
 		if (collided) {
 			state.collision = getPuckData();
 			collided = false;
 		}
 		if (scored) {
 			state.scored = getPuckData();
+			console.log(state.scored)
 			scored = false;
 		}
-		// TODO: Send state
+		socketConnection.emit("state", playerId, state);
 	}
 
 
@@ -271,11 +276,12 @@ define(['libs/hardcore'], function (Animatron) {
 							.fill(overlayButtonColor)
 							.add(
 								b('startButton')
-									.text([-100+35, 0+15],"START",30,"sans-serif")
+									.text([-50,-15],"START",30,"sans-serif")
 									.fill('#222')
 							)
 							.on(C.X_MCLICK, function(evt,t) {
-								if(gameMode == GAME_MODE.networked) sendMessage(ws,ClientMessage.CONFIRMATION);
+								if(gameMode == GAME_MODE.networked) 
+									socketConnection.emit('confirmation');
 
 								overlay.alpha([t,t+1], [.7,0]) //fade to transparent for 1s, then stay that way
 								overlay.alpha([t+1,SENTINEL], [0,0])
@@ -340,6 +346,8 @@ define(['libs/hardcore'], function (Animatron) {
 	var socketConnection;
 	pong.initGame = function(mode,aiName) {
 		canvas = document.getElementById('game-canvas');
+		canvas.width = 600;
+		canvas.height = 450;
 		initMouseMovement();
 		initPuck();
 		initPaddles();
@@ -357,16 +365,32 @@ define(['libs/hardcore'], function (Animatron) {
 
 			io = require('socketio');
 			socketConnection = io.connect(window.location.origin + "/game");
+			socketConnection.on('start', function(id) {
+				console
+				pong.startGame(id);
+			});
+			socketConnection.on('state', function(id, state) {
+				pong.setOpponentData(state.pos);
+
+				if (state.hasOwnProperty("collision"))
+					pong.updateLocation(state.collision);
+				if (state.hasOwnProperty("scored"))
+					pong.setNewScore(id, state.scored);
+			});
 		}
 	}
 
 	pong.startGame = function(id) {
+		console.log("Your id is: " + id);
 		playerId = id;
-		if(mode == GAME_MODE.versusAI) ai.setPlayerNum(id%2);
+		if (gameMode == GAME_MODE.versusAI) ai.setPlayerNum(id%2);
 
 		//add all the modifiers (puts game into effect)
-		scene.modify(stateMod);
+		if (gameMode == GAME_MODE.networked)
+			scene.modify(stateMod);
+		
 		puckElem.modify(puckMovementMod);
+		
 		if(playerId == 0) {
 			player1.modify(humanPlayerMod);
 			player2.modify(opponentMod);
@@ -375,7 +399,7 @@ define(['libs/hardcore'], function (Animatron) {
 			player2.modify(humanPlayerMod);
 		}
 		//set current time to start time
-		tLastPoint = pong.state.time;
+		tLastPoint = pongPlayer.state.time;
 	}
 
 	pong.setOpponentData = function(pos) {
@@ -384,16 +408,16 @@ define(['libs/hardcore'], function (Animatron) {
 
 	function getPuckData() {
 		var data = {
-				vector: {
-					x: puck.vx,
-					y: puck.vy
-				},
-				pos: {
-					x: puck.x,
-					y: puck.y
-				}
+			vector: {
+				x: puck.vx,
+				y: puck.vy
+			},
+			pos: {
+				x: puck.x,
+				y: puck.y
 			}
 		}
+		return data;
 	}
 
 	pong.setNewScore = function(id,puckInfo) {

@@ -43,12 +43,12 @@ var UserList = (function() {
         };
 
         this.setGameId = function(username, gameId) {
-            if (username.hasOwnProperty(username))
+            if (users.hasOwnProperty(username))
                 users[username].gameId = gameId;
         };
 
         this.getGameId = function(username) {
-            if (username.hasOwnProperty(username))
+            if (users.hasOwnProperty(username))
                 return users[username].gameId;
             return null;
         };
@@ -159,6 +159,10 @@ var GameSessionList = (function() {
         this.getType = function(id) {
             return gameSessions[id].type;
         };
+
+        this.setGame = function(id, game) {
+            gameSessions[id].game = game;
+        }
 
         this.processState = function(id, playerId, state) {
             gameSessions[id].game.updateState(playerId, state);
@@ -393,12 +397,14 @@ game.on('connection', function(socket) {
             if (gameSessions.getConfirmationStatus(id)) {
                 // Will change to be dynamic, for now, just Pong
                 var game = new Pong(gameSessions.getPlayers(id), id);
+                gameSessions.setGame(id, game);
                 game.init();
             }
         });
     });
 
     socket.on('state', function(id, state) {
+        console.log(state);
         socket.get("username", function(error, username) {
             gameSessions.processState(onlineUsers.getGameId(username), id, state);
         });
@@ -417,7 +423,7 @@ var Pong = (function() {
 
         this.init = function() {
             players.forEach(function(player, id) {
-                game.in(room).emit('start', id);
+                game.socket(onlineUsers.getId(player)).emit('start', id);
             });
         }
 
