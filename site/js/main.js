@@ -35,6 +35,10 @@ function getTemplate(id) {
 
 var globalEvents = {};
 
+function ps() {
+    globalEvents.trigger('toSessionView', 1, { name: "Pong", duration: { type: 'point', cond: 5} });
+}
+
 require(
   ["jquery",
     "underscore",

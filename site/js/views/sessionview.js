@@ -15,17 +15,15 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
             this.$el.html(this.template(modelJSON));
             return this;
         },
-        setView : function(gameMode, json) {
-            modelJSON = json;
+        setView : function(gameMode, gameInfo) {
+            modelJSON = gameInfo;
             this.render();
             this.$el.addClass("rendered");
 
             // Add the game to the canvas
-            var gameName = json.name.toLowerCase(); // 'games/' + gameName + "/" + gameName + '.js'
+            var gameName = gameInfo.name.toLowerCase(); // 'games/' + gameName + "/" + gameName + '.js'
             require(['games/pong/pong'], function(pong) {
-                console.log(pong);
-
-                pong.initGame(gameMode, "perfectAI.js");
+                pong.initGame(gameMode, "perfectAI.js",gameInfo.duration);
             });
 
             $('#session-page').css({'left':window.innerWidth})

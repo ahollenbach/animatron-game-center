@@ -298,8 +298,17 @@ ul#user-list  {
     vertical-align: top;
     text-align: center;
     z-index: 1;
+
+    background: url(http://animatron.com/assets/images/landing/bg_ipad.jpg) 0 0 no-repeat;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
 }
 
+#session-page.rendered h1 {
+    color:#F4F3F4 !important;
+}
 
 /*=======================================================*/
 /* Player Icons
@@ -420,4 +429,12 @@ div.curtain {
     height: 25%;
     min-width: 300px;
     min-height: 150px;
+}
+
+
+/*=======================================================*/
+/* Canvas
+/*=======================================================*/
+canvas#game-canvas:focus {
+    outline: 0;
 }

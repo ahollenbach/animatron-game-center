@@ -15,6 +15,7 @@ var UserListView = Backbone.View.extend({
     selectedUsers : [],
     acceptedUsers : [],
     username : null,
+    attributes : null,
 
     // Socket io connection
     invite : null,
@@ -38,8 +39,10 @@ var UserListView = Backbone.View.extend({
         this.listenTo(this.collection, 'reset', this.render);
     },
     render : function(evt) {
-        if(evt.attributes) this.$el.html(this.template(evt.attributes)); //add num player select
-        else $('#user-list').html("");
+        if(evt.attributes && evt.attributes.maxPlayers) this.attributes = evt.attributes;
+        console.log(this.attributes)
+        this.$el.html(this.template(this.attributes)); //add num player select
+        //else $('#user-list').html("");
         this.collection.each(function(user) { // then players?
             if (user.get("username") != this.username)
                 this.renderUser(user);

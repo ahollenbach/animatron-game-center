@@ -17,6 +17,10 @@ define(['libs/hardcore'], function (Animatron) {
 	var   opponentY             = 0;                         // Position of opponent's paddle
 	var   collided              = false;                     // If puck collided this step
 	var   scored                = false;                     // If puck scored this step
+	var   victory               = {
+									type: 'point',           // Type of victory (either 'point' or 'time')
+									cond: 7                  // win condition (either points or minutes)
+								  }
 
 	// Animatron aliases
 	var b = Builder._$, C = anm.C;
@@ -117,24 +121,34 @@ define(['libs/hardcore'], function (Animatron) {
 	//t: the elapsed time
 	function addPoint(playerNum,t) {
 		//only send point scored if you scored goal
-		if(playerNum == playerId+1) {
+		if(playerNum == playerId+1 || gameMode == GAME_MODE.versusAI) {
 			resetPuck();
+			puckElem.alpha([t, t+1], [0, 1])
 			scored = true;
-			updateScore(playerNum)
+			updateScore(playerNum,t)
 		}
 	}
 
-	function updateScore(playerNum) {
-		console.log(playerNum, "scored")
+	function updateScore(playerNum,t) {
+		if(!t) t = pongPlayer.state.time;
 		if(playerNum == 1) {
-			p1ScoreText.unpaint(p1ScoreTextStyle);
-			p1ScoreText.paint(p1ScoreTextStyle = generateScoreStyle(1,++p1Score));
+			genText(p1ScoreText,[canvas.width/4-10, 50],++p1Score + "")
 		} else {
-			p2ScoreText.unpaint(p2ScoreTextStyle);
-			p2ScoreText.paint(p2ScoreTextStyle = generateScoreStyle(3,++p2Score));
+			genText(p2ScoreText,[canvas.width*3/4, 50],++p2Score + "")
 		}
-		tLastPoint = pongPlayer.state.time;
+		if(victory.type == 'point') {
+			if     (p1Score == victory.cond) triggerVictory(1);
+		    else if(p2Score == victory.cond) triggerVictory(2);
+		}
+		tLastPoint = t;
 		speedMultiplier = DEFAULT_SPEED_MULT;
+
+		// Popup bubble announcing who scored
+		genText(scoredText,[canvas.width/2-65, -40],"Player " + playerNum + " scored!",{size: 20, color:"#222"});
+		var peek = 15 + 40;
+		scoredText.trans([t   ,t+.2], [[0, 0   ], [0, peek]], C.E_COUT)
+		scoredText.trans([t+.2,t+.8], [[0, peek], [0, peek]]          )
+		scoredText.trans([t+.8,t+1 ], [[0, peek], [0, 0   ]], C.E_CIN )
 	}
 
 	
@@ -201,24 +215,26 @@ define(['libs/hardcore'], function (Animatron) {
 	}
 
 	var puckMovementMod = function(t) {
-		var dt = t-this._._appliedAt;
-		puck.x += puck.vx * dt;
-		puck.y += puck.vy * dt;
-		this.x = puck.x;
-		this.y = puck.y;
+		if(t-tLastPoint > 1) {  // Only move if more than a second after last score
+			var dt = t-this._._appliedAt;
+			puck.x += puck.vx * dt;
+			puck.y += puck.vy * dt;
+			this.x = puck.x;
+			this.y = puck.y;
 
-		// Check for wall hits
-		if (puck.y - puck.radius < -canvas.height/2) {
-			bouncePuck('top',t);
-		} else if(puck.y + puck.radius > canvas.height/2) {
-			bouncePuck('bottom',t);
-		}
+			// Check for wall hits
+			if (puck.y - puck.radius < -canvas.height/2) {
+				bouncePuck('top',t);
+			} else if(puck.y + puck.radius > canvas.height/2) {
+				bouncePuck('bottom',t);
+			}
 
-		// Check left or right wall (point scored)
-		if (puck.x - puck.radius < -canvas.width/2 || puck.x + puck.radius > canvas.width/2) {
-			var scoringPlayer = 1;
-			if(puck.x - puck.radius < -canvas.width/2) scoringPlayer = 2 //score on left, player 2 point
-			addPoint(scoringPlayer,t);
+			// Check left or right wall (point scored)
+			if (puck.x - puck.radius < -canvas.width/2 || puck.x + puck.radius > canvas.width/2) {
+				var scoringPlayer = 1;
+				if(puck.x - puck.radius < -canvas.width/2) scoringPlayer = 2 //score on left, player 2 point
+				addPoint(scoringPlayer,t);
+			}
 		}
 	}
 
@@ -243,21 +259,21 @@ define(['libs/hardcore'], function (Animatron) {
 
 
 	/**************************APPEARANCE/SCORE FORMATTING**************************/
-	var player1Color 		= '#BB0000';
-	var player2Color 		= '#0088BB';
-	var puckColor 	 		= '#000';
-	var overlayColor 		= '#000';
-	var overlayButtonColor 	= '#EEE';
+	const player1Color 			= '#BB0000';
+	const player2Color 			= '#0088BB';
+	const puckColor 	 		= '#000';
+	const overlayColor 			= '#111';
+	const overlayButtonColor 	= '#EEE';
 
-	function generateScoreStyle(location,text) {
-		return  function(ctx) {
-			      ctx.fillStyle = '#444';
-			      ctx.font = '30pt sans-serif';
-			      ctx.fillText(text, canvas.width*location/4, 50);
-				}
+	function genText(elem, pos, val, options) {
+		if(!options) options = {}
+		var color = !options.color ? '#333'       : options.color;
+		var font  = !options.font  ? 'Open Sans' : options.font;
+		var size  = !options.size  ? 30           : options.size;
+	    elem      = !elem          ? b()          : elem;
+		return elem.text(pos,val,size,font).fill(color);
 	}
-	var p1ScoreText, p2ScoreText;
-	var p1ScoreTextStyle, p2ScoreTextStyle;
+	var p1ScoreText, p2ScoreText,scoredText;
 	
 
 	/**************************SCENE CREATION**************************/
@@ -269,21 +285,22 @@ define(['libs/hardcore'], function (Animatron) {
 		player1 = b('player1'); player2 = b('player2'); puckElem = b('puck');
 		overlay = b("overlay").rect([canvas.width/2, canvas.height/2], [canvas.width, canvas.height])
 					          .fill(overlayColor)
-					          .alpha([0,SENTINEL],[.7,.7])
+					          .alpha([0,SENTINEL],[.9,.9])
 					              
 		overlayButton = b("overlayButton")
 							.rect([canvas.width/2, canvas.height/2], [200, 100])
 							.fill(overlayButtonColor)
-							.add(
-								b('startButton')
-									.text([-50,-15],"START",30,"sans-serif")
-									.fill('#222')
-							)
+							.add(genText(b('startButton'),[-42,-22],"START",{color: '#111'}))
 							.on(C.X_MCLICK, function(evt,t) {
 								if(gameMode == GAME_MODE.networked) 
 									socketConnection.emit('confirmation');
+								else if(gameMode == GAME_MODE.versusAI) {
+									ai.setPlayerNum(0);
+									if(!puckElem.v.disabled) pong.startGame(1);
+									else resetGame();
+								}
 
-								overlay.alpha([t,t+1], [.7,0]) //fade to transparent for 1s, then stay that way
+								overlay.alpha([t,t+1], [.9,0]) //fade to transparent for 1s, then stay that way
 								overlay.alpha([t+1,SENTINEL], [0,0])
 								//overlay.disable();
 								overlayButton.disable();
@@ -302,9 +319,10 @@ define(['libs/hardcore'], function (Animatron) {
 						puckElem.circle([puck.x,puck.y], puck.radius)
 		  		   		        .fill(puckColor))
 				    .add(
-					    p1ScoreText.paint(p1ScoreTextStyle = generateScoreStyle(1,p1Score)))
+				    	genText(p1ScoreText,[canvas.width/4, 50],p1Score + ""))
 				    .add(
-					    p2ScoreText.paint(p2ScoreTextStyle = generateScoreStyle(3,p2Score)));
+					    genText(p2ScoreText,[canvas.width*3/4, 50],p2Score + ""))
+				    .add(scoredText = b('scoredText'))
 
 		puckElem.modify(function(t) {
 			     this.$.collides(player1.v, function() {
@@ -331,7 +349,7 @@ define(['libs/hardcore'], function (Animatron) {
 				"fps": 50, //doesn't actually work
 				"width" : canvas.width,
 				"height" : canvas.height,
-				"bgfill" : { color : "#FFF" }
+				"bgcolor" : { color : "#F6F6F6" }
 			} 
 		}).load(scene);
 		scene.add(overlay);
@@ -344,7 +362,7 @@ define(['libs/hardcore'], function (Animatron) {
 	// Socket.io stuff, which will only be initialized if we're networked
 	var io;
 	var socketConnection;
-	pong.initGame = function(mode,aiName) {
+	pong.initGame = function(mode,aiName,duration) {
 		canvas = document.getElementById('game-canvas');
 		canvas.width = 600;
 		canvas.height = 450;
@@ -354,7 +372,7 @@ define(['libs/hardcore'], function (Animatron) {
 		buildScene();
 
 		if(mode == GAME_MODE.versusAI) {
-			require(["games/pong/ai/" + aiName], function(aiModule) {
+			require(["js/games/pong/ai/" + aiName], function(aiModule) {
 				gameMode = GAME_MODE.versusAI
 				ai = new aiModule(puck, paddle);
 				opponentMod = aiMod;
@@ -366,8 +384,8 @@ define(['libs/hardcore'], function (Animatron) {
 			io = require('socketio');
 			socketConnection = io.connect(window.location.origin + "/game");
 			socketConnection.on('start', function(id) {
-				console
-				pong.startGame(id);
+				if(!puckElem.v.disabled) pong.startGame(id);
+				else resetGame();
 			});
 			socketConnection.on('state', function(id, state) {
 				pong.setOpponentData(state.pos);
@@ -378,12 +396,15 @@ define(['libs/hardcore'], function (Animatron) {
 					pong.setNewScore(id, state.scored);
 			});
 		}
+
+		victory.type = duration.type;
+		victory.cond = duration.cond;
 	}
 
 	pong.startGame = function(id) {
 		console.log("Your id is: " + id);
 		playerId = id;
-		if (gameMode == GAME_MODE.versusAI) ai.setPlayerNum(id%2);
+		//if (gameMode == GAME_MODE.versusAI) ai.setPlayerNum(id-1);
 
 		//add all the modifiers (puts game into effect)
 		if (gameMode == GAME_MODE.networked)
@@ -398,8 +419,31 @@ define(['libs/hardcore'], function (Animatron) {
 			player1.modify(opponentMod);
 			player2.modify(humanPlayerMod);
 		}
+		resetGame();
+	}
+
+	function resetGame() {
 		//set current time to start time
 		tLastPoint = pongPlayer.state.time;
+		puckElem.v.disabled = false;
+		p1Score = 0, p2Score = 0;
+		genText(p1ScoreText,[canvas.width/4-10, 50],p1Score + "")
+		genText(p2ScoreText,[canvas.width*3/4, 50] ,p2Score + "")
+	}
+
+	function triggerVictory(playerNum) {
+		var t = pongPlayer.state.time;
+		overlay.alpha([t,t+1], [0,.9]);
+		overlay.alpha([t+1,SENTINEL], [.9,.9]);
+		var winner = genText(b('winner'),[-125, -canvas.height/3],"Player " + playerNum + " wins!", {size: 40, color:"#EEE"});
+		winner.modify(function(t) {
+			//this.scale = Math.sin(t) + .5;
+		})
+		overlay.add(winner)
+		overlayButton.enable();
+		console.log(b(overlayButton.v.children[0])); genText(b(overlayButton.v.children[0]),[-45,-45],['  PLAY ', 'AGAIN?'],{color: '#111'})
+		canvas.style.cursor = 'pointer';
+		puckElem.v.disabled = true;
 	}
 
 	pong.setOpponentData = function(pos) {
