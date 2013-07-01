@@ -16,9 +16,13 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
             return this;
         },
         setView : function(gameMode, gameInfo) {
+            // TODO: THIS IS A HACK, FIX IT
+            gameInfo.duration = { type: "point", cond: 7 };
+
             modelJSON = gameInfo;
             this.render();
             this.$el.addClass("rendered");
+
 
             // Add the game to the canvas
             var gameName = gameInfo.name.toLowerCase(); // 'games/' + gameName + "/" + gameName + '.js'

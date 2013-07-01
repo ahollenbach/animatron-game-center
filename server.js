@@ -226,10 +226,10 @@ game.on('connection', function(socket) {
 
             if (gameSessions.getConfirmationStatus(id)) {
                 // Will change to be dynamic, for now, just Pong
-                var Pong = require("pong");
-                var game = new Pong(gameSessions.getPlayers(id), id);
-                gameSessions.setGame(id, game);
-                game.init();
+                // var Pong = require("pong");
+                var g = new Pong(gameSessions.getPlayers(id), id);
+                gameSessions.setGame(id, g);
+                g.init();
             }
         });
     });
@@ -241,3 +241,30 @@ game.on('connection', function(socket) {
         });
     });
 });
+
+//=============================================================================
+// Pong Game Module
+//=============================================================================
+var Pong = (function() {
+    var c = function(p, r) {
+        var players = p;
+        var room = r;
+
+        // console.log(Builder, anm);
+
+        this.init = function() {
+            players.forEach(function(player, id) {
+                game.socket(onlineUsers.getId(player)).emit('start', id);
+            });
+        }
+
+        this.updateState = function(id, state) {
+            game
+                .socket(onlineUsers.getId(players[id]))
+                .broadcast.to(room)
+                .emit('state', id, state);
+        };
+    };
+
+    return c;
+})();
