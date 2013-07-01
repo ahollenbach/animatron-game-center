@@ -44,6 +44,7 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
             'click #dropdownToggle' : 'toggleDropdown',
             'click #chatToggle'     : 'toggleChat',
             'click #login button'   : 'login',
+            'keydown #login input'  : 'checkForEnter',
             'click .playerIcon'     : 'selectPlayers',
 
             'keydown #chat-message' : 'sendChatMessage'
@@ -58,8 +59,6 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
             chatBox.toggleClass("active", EASE_LEN, EASING);
         },
         login: function(evt) {
-            evt.preventDefault();
-
             this.toggleChat();
 
             // Add user via RESTful API
@@ -78,6 +77,10 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
                 that.toggleDropdown();
                 that.configureSockets(username);
             });
+        },
+        checkForEnter : function(evt) {
+            if (evt.keyCode === 13)
+                this.login();
         },
         selectPlayers : function(evt) {
             $(this).siblings().removeClass('selected');
