@@ -29,6 +29,7 @@ require.config({
 // Globals
 //=============================================================================
 const EASE_LEN = 200, EASING = 'easeInOutCubic';
+var centrifugal = .3
 function getTemplate(id) {
     return $("#" + id).html();
 }
