@@ -46,7 +46,8 @@ var Util = {
 
   toRadians: function(degrees)   {return degrees * Math.PI / 180; },
   toDegrees: function(radians)   {return radians * 180 / Math.PI; },
-  clamp    : function(min,x,max) {return Math.max(min, Math.min(x, max))}
+  clamp    : function(min,x,max) {return Math.max(min, Math.min(x, max))},
+  getSign  : function(num)       {return num?num<0?-1:1:0}
 }
 return Util;
 });

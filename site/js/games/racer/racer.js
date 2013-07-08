@@ -59,7 +59,7 @@ var Game = {
     canvas.width  = width;
     canvas.height = height;
 
-    Game.loadImages(["background", "sprites_new"], function(images) {
+    Game.loadImages(["background", "sprites"], function(images) {
 
       background = images[0];
       sprites    = images[1];
@@ -320,7 +320,7 @@ var Render = {
   //---------------------------------------------------------------------------
 
   sprite: function(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY, offsetX, offsetY, clipY,isCar) {
-    var spriteScale = isCar ? C.SPRITES.CAR_SCALE : C.SPRITES.SCALE * (sprite == C.SPRITES.BILLBOARD?.5:1);
+    var spriteScale = C.SPRITES.SCALE;
     var destW  = (sprite.w * scale * width/2) * (spriteScale * roadWidth);
     var destH  = (sprite.h * scale * width/2) * (spriteScale * roadWidth);
 
@@ -338,10 +338,13 @@ var Render = {
   player: function(ctx, width, height, resolution, roadWidth, sprites, speedPercent, scale, destX, destY, steer, updown) {
     var bounce = (1.5 * Math.random() * speedPercent * resolution) * Util.randomChoice([-1,1]);
     var sprite;
-    updown = updown < 5 ? 0 : 1;
-    
-    var lrOrient =Util.clamp(0,Math.round(s.player.dx*100)+2,4);
-    sprite = C.SPRITES.CAR_ORIENT[updown][lrOrient];
+    updown = updown < 5 ? (updown < -11 ? 0 : 1) : 2; // custom tuned, what feels right
+    var dx = s.player.dx*100;
+    var lrOrient = Math.abs(dx-0);
+    if (lrOrient < .1) lrOrient = 0;
+    else               lrOrient = Util.clamp(0,Math.ceil(lrOrient),2) * Util.getSign(dx);
+
+    sprite = C.SPRITES.CAR_ORIENT[updown][lrOrient+3];
     Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY + bounce, -0.5, -1,null,true);
   },
 

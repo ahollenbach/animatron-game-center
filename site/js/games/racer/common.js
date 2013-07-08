@@ -82,37 +82,48 @@ const OLD_SPRITES = {
 };
 
 const SPRITES = {
-BILLBOARD: { x:  2 , y:  2 , w:  914 , h:  668  },
-BOULDER1: { x:  2283 , y:  1571 , w:  168 , h:  248  },
-BOULDER2: { x:  1173 , y:  1743 , w:  298 , h:  140  },
-BOULDER3: { x:  1750 , y:  1535 , w:  320 , h:  220  },
-BUSH1: { x:  1473 , y:  1743 , w:  240 , h:  155  },
-BUSH2: { x:  1715 , y:  1757 , w:  232 , h:  152  },
-CACTUS: { x:  2377 , y:  1451 , w:  235 , h:  118  },
-CAR_LEFT: { x:  918 , y:  2 , w:  594 , h:  584  },
-CAR_LEFT_2: { x:  1174 , y:  590 , w:  595 , h:  578  },
-CAR_LEFT_2_UP: { x:  1174 , y:  1170 , w:  574 , h:  571  },
-CAR_LEFT_UP: { x:  1771 , y:  592 , w:  576 , h:  579  },
-CAR_RIGHT: { x:  1514 , y:  2 , w:  591 , h:  586  },
-CAR_RIGHT_2: { x:  2 , y:  672 , w:  595 , h:  586  },
-CAR_RIGHT_2_UP: { x:  2107 , y:  2 , w:  573 , h:  588  },
-CAR_RIGHT_UP: { x:  599 , y:  672 , w:  573 , h:  586  },
-CAR_STRAIGHT: { x:  2 , y:  1260 , w:  591 , h:  586  },
-CAR_STRAIGHT_UP: { x:  595 , y:  1260 , w:  576 , h:  581  },
-COLUMN: { x:  2377 , y:  1134 , w:  200 , h:  315  },
-DEAD_TREE1: { x:  2146 , y:  1528 , w:  135 , h:  332  },
-DEAD_TREE2: { x:  2453 , y:  1571 , w:  150 , h:  260  },
-PALM_TREE: { x:  2349 , y:  592 , w:  215 , h:  540  },
-STUMP: { x:  1949 , y:  1757 , w:  195 , h:  140  },
-TREE1: { x:  1750 , y:  1173 , w:  360 , h:  360  },
-TREE2: { x:  2112 , y:  1173 , w:  263 , h:  353  }
+BILLBOARD: { x:  1548 , y:  634 , w:  700 , h:  510  },
+BOULDER1: { x:  1558 , y:  2 , w:  336 , h:  496  },
+BOULDER2: { x:  3425 , y:  2 , w:  596 , h:  280  },
+BOULDER3: { x:  1896 , y:  2 , w:  640 , h:  440  },
+BUSH1: { x:  2 , y:  1084 , w:  480 , h:  310  },
+BUSH2: { x:  2250 , y:  444 , w:  464 , h:  304  },
+CACTUS: { x:  1246 , y:  1156 , w:  470 , h:  236  },
+CAR_DRIFT_LEFT: { x:  3430 , y:  566 , w:  299 , h:  281  },
+CAR_DRIFT_LEFT_DOWN: { x:  3773 , y:  1125 , w:  302 , h:  276  },
+CAR_DRIFT_LEFT_UP: { x:  2833 , y:  579 , w:  291 , h:  284  },
+CAR_DRIFT_RIGHT: { x:  2250 , y:  1039 , w:  298 , h:  286  },
+CAR_DRIFT_RIGHT_DOWN: { x:  3731 , y:  566 , w:  300 , h:  279  },
+CAR_DRIFT_RIGHT_UP: { x:  2538 , y:  2 , w:  289 , h:  288  },
+CAR_LEFT: { x:  3126 , y:  575 , w:  302 , h:  281  },
+CAR_LEFT_2: { x:  3157 , y:  858 , w:  301 , h:  281  },
+CAR_LEFT_2_DOWN: { x:  1718 , y:  1146 , w:  305 , h:  275  },
+CAR_LEFT_2_UP: { x:  3008 , y:  289 , w:  289 , h:  284  },
+CAR_LEFT_DOWN: { x:  3465 , y:  1131 , w:  306 , h:  277  },
+CAR_LEFT_UP: { x:  2829 , y:  2 , w:  290 , h:  285  },
+CAR_RIGHT: { x:  3121 , y:  2 , w:  302 , h:  283  },
+CAR_RIGHT_2: { x:  2550 , y:  1038 , w:  301 , h:  285  },
+CAR_RIGHT_2_DOWN: { x:  3460 , y:  849 , w:  305 , h:  280  },
+CAR_RIGHT_2_UP: { x:  2250 , y:  750 , w:  289 , h:  287  },
+CAR_RIGHT_DOWN: { x:  3157 , y:  1141 , w:  306 , h:  280  },
+CAR_RIGHT_UP: { x:  2541 , y:  750 , w:  290 , h:  286  },
+CAR_STRAIGHT: { x:  2853 , y:  865 , w:  302 , h:  281  },
+CAR_STRAIGHT_DOWN: { x:  3767 , y:  847 , w:  306 , h:  276  },
+CAR_STRAIGHT_UP: { x:  2716 , y:  292 , w:  290 , h:  285  },
+COLUMN: { x:  1156 , y:  2 , w:  400 , h:  630  },
+DEAD_TREE1: { x:  974 , y:  724 , w:  270 , h:  664  },
+DEAD_TREE2: { x:  1246 , y:  634 , w:  300 , h:  520  },
+PALM_TREE: { x:  2 , y:  2 , w:  430 , h:  1080  },
+STUMP: { x:  3425 , y:  284 , w:  390 , h:  280  },
+TREE1: { x:  434 , y:  2 , w:  720 , h:  720  },
+TREE2: { x:  484 , y:  724 , w:  488 , h:  674  }
 };
 
-SPRITES.SCALE = (1.5/SPRITES.CAR_STRAIGHT.w) // the reference sprite width should be 1/3rd the (half-)roadWidth
-SPRITES.CAR_SCALE  = 0.3 * (1/SPRITES.CAR_STRAIGHT.w)
+SPRITES.SCALE = .3 * (1/SPRITES.CAR_STRAIGHT.w) // the reference sprite width should be 1/3rd the (half-)roadWidth
 
-SPRITES.CAR_ORIENT = [[ SPRITES.CAR_LEFT_2   ,  SPRITES.CAR_LEFT   ,  SPRITES.CAR_STRAIGHT   , SPRITES.CAR_RIGHT   , SPRITES.CAR_RIGHT_2    ],
-                      [ SPRITES.CAR_LEFT_2_UP,  SPRITES.CAR_LEFT_UP,  SPRITES.CAR_STRAIGHT_UP, SPRITES.CAR_RIGHT_UP, SPRITES.CAR_RIGHT_2_UP ]];
+SPRITES.CAR_ORIENT = [[ SPRITES.CAR_DRIFT_LEFT_DOWN, SPRITES.CAR_LEFT_2_DOWN, SPRITES.CAR_LEFT_DOWN,  SPRITES.CAR_STRAIGHT_DOWN, SPRITES.CAR_RIGHT_DOWN, SPRITES.CAR_RIGHT_2_DOWN, SPRITES.CAR_DRIFT_RIGHT_DOWN],
+                      [ SPRITES.CAR_DRIFT_LEFT,      SPRITES.CAR_LEFT_2   ,   SPRITES.CAR_LEFT   ,    SPRITES.CAR_STRAIGHT   ,   SPRITES.CAR_RIGHT   ,   SPRITES.CAR_RIGHT_2   ,   SPRITES.CAR_DRIFT_RIGHT],
+                      [ SPRITES.CAR_DRIFT_LEFT_UP,   SPRITES.CAR_LEFT_2_UP,   SPRITES.CAR_LEFT_UP,    SPRITES.CAR_STRAIGHT_UP,   SPRITES.CAR_RIGHT_UP,   SPRITES.CAR_RIGHT_2_UP,   SPRITES.CAR_DRIFT_RIGHT_UP]];
 
 //SPRITES.BILLBOARDS = [SPRITES.BILLBOARD01, SPRITES.BILLBOARD02, SPRITES.BILLBOARD03, SPRITES.BILLBOARD04, SPRITES.BILLBOARD05, SPRITES.BILLBOARD06, SPRITES.BILLBOARD07, SPRITES.BILLBOARD08, SPRITES.BILLBOARD09];
 SPRITES.BILLBOARDS = [SPRITES.BILLBOARD];

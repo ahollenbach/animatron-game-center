@@ -59,10 +59,11 @@ racer.update = function(dt) {
     s.player.dx = Math.min(Util.accelerate(s.player.dx, ax, dt),dx);
   }
   else {
-    if(s.player.x != 0) s.player.dx = Util.accelerate(s.player.dx, s.player.dx<0?ax/2:-ax/2, dt);
+    if(s.player.x != 0) s.player.dx -= s.player.dx/2;
   }
   s.player.x += s.player.dx;
-  s.player.x = s.player.x - (speedPercent<.3?Math.abs(s.player.dx)/2:(2*speedPercent/3*dt)) * C.playerSegment.curve;
+  var outwardForce = dx * C.playerSegment.curve / 4;
+  s.player.x = s.player.x - outwardForce;
   
 
   if (C.keyFaster)
