@@ -329,19 +329,19 @@ function resetRoad() {
 function resetSprites() {
   var n, i;
 
-  addSprite(20,  C.SPRITES.BILLBOARD, -1.2);
-  addSprite(60,  C.SPRITES.BILLBOARD, -1.2);
-  addSprite(100, C.SPRITES.BILLBOARD, -1.2);
-  addSprite(140, C.SPRITES.BILLBOARD, -1.2);
-  addSprite(180, C.SPRITES.BILLBOARD, -1.2);
+  addSprite(20,  C.SPRITES.BILLBOARD, -1.4);
+  addSprite(60,  C.SPRITES.BILLBOARD, -1.4);
+  addSprite(100, C.SPRITES.BILLBOARD, -1.4);
+  addSprite(140, C.SPRITES.BILLBOARD, -1.4);
+  addSprite(180, C.SPRITES.BILLBOARD, -1.4);
 
-  addSprite(240,                    C.SPRITES.BILLBOARD, -1.2);
-  addSprite(240,                    C.SPRITES.BILLBOARD,  1.2);
-  addSprite(C.segments.length - 25, C.SPRITES.BILLBOARD, -1.2);
-  addSprite(C.segments.length - 25, C.SPRITES.BILLBOARD,  1.2);
+  addSprite(240,                    C.SPRITES.BILLBOARD, -1.4);
+  addSprite(240,                    C.SPRITES.BILLBOARD,  1.4);
+  addSprite(C.segments.length - 25, C.SPRITES.BILLBOARD, -1.4);
+  addSprite(C.segments.length - 25, C.SPRITES.BILLBOARD,  1.4);
 
   for(n = 10 ; n < 200 ; n += 4 + Math.floor(n/100)) {
-    addSprite(n, C.SPRITES.PALM_TREE, 0.6 + Math.random()*0.5);
+    addSprite(n, C.SPRITES.PALM_TREE, .9 + Math.random()*0.5);
     addSprite(n, C.SPRITES.PALM_TREE,   1.1 + Math.random()*2);
   }
 
