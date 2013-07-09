@@ -1,0 +1,235 @@
+// http://orderly-json.org/docs
+// to validate on the fly:
+// http://orderly-json.org/tryit && http://jsonschemalint.com/
+
+object {
+
+    // meta
+    object {
+        string id; // 23-char hash
+        integer created?; // timestamp
+        integer modified?; // timestamp
+        number modificationTime?; // timestamp
+        string author;
+        string description;
+        string name;
+        string copyright;
+        number version?;
+        number duration?; // float
+        integer numberOfScenes?;
+        union {
+            null;
+            string [ "Public", "Unlisted" ];
+        } projectAccessType?;
+        boolean projectAccessReadOnly?;
+    } meta;
+
+    // data
+    object {
+
+        // swatches
+        array [
+            union { // *brush*
+                null;
+                object {
+                    string color;
+                    string rgba?;
+                    number alpha?;
+                };
+                object {
+                    number r0?; number r1?;
+                    number x0; number y0;
+                    number x1; number y1;
+                    array [ string ] colors;
+                    array [ string ] rgbas?;
+                    array [ number ] offsets;
+                    array { number; number; number; number; } bounds;
+                    number alpha?;
+                };
+            }
+        ] swatches?;
+
+    } data?;
+
+    // anim
+    object {
+
+        array { number; number; } dimension;
+        number framerate;
+
+        array [ string ] scenes;
+
+        // background
+        union { // *brush*
+            null;
+            object {
+                string color;
+                string rgba?;
+                number alpha?;
+            };
+            object {
+                number r0?; number r1?;
+                number x0; number y0;
+                number x1; number y1;
+                array [ string ] colors;
+                array [ string ] rgbas?;
+                array [ number ] offsets;
+                array { number; number; number; number; } bounds;
+                number alpha?;
+            };
+        } background;
+
+        // elements
+        array [
+
+            union {
+
+                // empty object
+                object {
+                    string id;
+                    string name?;
+                };
+
+                // image
+                object {
+                    string id;
+                    string name?;
+                    string url;
+                };
+
+                // static element
+                object {
+
+                    string id;
+                    string name?;
+
+                    string path?; // TODO: split shapes and texts
+                    string original_path?;
+                    string font <text>?;
+                    string text?;
+                    number brushWidth?;
+                    number errorThreshold?;
+
+                    array { number; number; number; number; } "round-rect"?;
+
+                    // stroke
+                    object {
+
+                        number width <paint>?;
+
+                        // paint
+                        union { // *brush*
+                            null;
+                            object {
+                                string color;
+                                string rgba?;
+                                number alpha?;
+                            };
+                            object {
+                                number r0?; number r1?;
+                                number x0; number y0;
+                                number x1; number y1;
+                                array [ string ] colors;
+                                array [ string ] rgbas?;
+                                array [ number ] offsets;
+                                array { number; number; number; number; } bounds;
+                                number alpha?;
+                            };
+                        } paint?;
+
+                        string cap?; // TODO: enum
+                        string join?; // TODO: enum
+                        number limit?;
+
+                    } stroke?;
+
+                    // fill
+                    union { // *brush*
+                        null;
+                        object {
+                            string color;
+                            string rgba?;
+                            number alpha?;
+                        };
+                        object {
+                            number r0?; number r1?;
+                            number x0; number y0;
+                            number x1; number y1;
+                            array [ string ] colors;
+                            array [ string ] rgbas?;
+                            array [ number ] offsets;
+                            array { number; number; number; number; } bounds;
+                            number alpha?;
+                        };
+                    } fill?;
+
+                };
+
+                // dynamic element
+                object {
+                    string id;
+                    string name?;
+
+                    // layers
+                    array [
+                        object { // *layer-data*
+                            string id;
+                            string eid; // TODO: split in ones with eid with ones without & s.o., ...
+                            string name?;
+                            array { number; number; } band;
+                            union {
+                                array { string; string; };  // should be only number; number;
+                                array { number; number; };
+                            } reg;
+
+                            boolean visible;
+                            boolean outline;
+                            boolean locked;
+                            boolean dynamic;
+                            boolean opaque;
+
+                            string "outline-color"?;
+
+                            number masked?;
+                            array [
+                                string [ "Translate", "Rotate", "Scale", "Alpha", "Shear", "rotate-to-path" ]
+                            ] "last-frames-defined"?;
+                            string "saved-tweens"?; // "[{\"type\":\"Scale\",..."
+
+                            // tweens
+                            array [
+                                object {
+                                    string type [ "Translate", "Rotate", "Scale", "Alpha", "Shear", "rotate-to-path" ];
+                                    array { number; number; } band;
+                                    array [ number ] data?;
+                                    string path?;
+                                    object {
+                                        string name; // Unknown, Ease In Out, ...
+                                        string path?;
+                                    } easing?;
+                                }
+                            ] tweens?;
+
+                        }
+                    ] layers;
+
+                    object {
+                        union {
+                            string [ "once", "stay", "loop", "bounce" ];
+                            null;
+                        } type;
+                        number counter?;
+                    } end?;
+                    union {
+                        string [ "STOP", "LOOP", "BOUNCE" ];
+                        null;
+                    } "on-end"?;
+                };
+
+            }
+
+        ] elements;
+
+    } anim;
+
+};
