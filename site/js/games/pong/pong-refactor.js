@@ -42,12 +42,14 @@
 const WIDTH = 600;
 const HEIGHT = 450;
 
-var Direction = {
+const Direction = {
 	TOP : "top",
 	BOTTOM : "bottom",
 	LEFT : "left",
 	RIGHT : "right"
 };
+
+var paddles = [];
 
 var Puck = (function() {
 	/**************************PUCK PHYSICS**************************/
@@ -64,8 +66,8 @@ var Puck = (function() {
 		// Private functions
 
 		// Public variables
-		this.x = 0;
-		this.y = 0;
+		this.x = x;
+		this.y = y;
 		this.vx = 0;
 		this.vy = 0;
 		this.radius = radius;
@@ -86,22 +88,56 @@ var Puck = (function() {
 				y : this.y
 			});
 		},
+		checkBounds : function() {
+			if(this.y - this.radius < -HEIGHT/2)     bounce(Direction.TOP)
+			else if(this.y + this.radius > HEIGHT/2) bounce(Direction.BOTTOM)
+
+			if (this.x - this.radius < -WIDTH/2 || this.x + this.radius > WIDTH/2) {
+				var scoringPlayer = (puck.x - puck.radius < -canvas.width/2) ? 2 : 1;
+				return scoringPlayer;
+			}
+			return null;
+		}
 		bounce : function(direction) {
 			switch (direction) {
-				case Direction.TOP:
+				case Direction.TOP: 
 					this.y = -HEIGHT / 2 + this.radius;
 				case Direction.BOTTOM:
 					if (direction == Direction.BOTTOM)
 						this.y = HEIGHT / 2 - this.radius;
-					this.vx *= this.speedMultiplier;
-					this.vy *= -this.speedMultiplier;
+					this.vy *= -1;
 					break;
 				case Direction.LEFT:
-				// TODO: finish this
+				case Direction.RIGHT:
+					bouncePaddle(direction);
 			}
+			this.vx *= this.speedMultiplier;
+			this.vy *= this.speedMultiplier;
+		},
+		bounceAgainstPaddle : function(direction) {
+			var playerNum = direction == Direction.LEFT ? 0 : 1;
+			var paddle = paddles[playerNum];
+
+			var relIntersect = (paddle.y - this.y) / (paddle.height/2 + this.radius); //distance of puck center from paddle center+puckradius
+			var bounceAngle = -relIntersect * MAX_BOUNCE_ANGLE;
+			var curPuckSpeed = Math.sqrt(Math.pow(this.vx,2) + Math.pow(this.vy,2)); //a^2+b^2=c^2
+			if(playerNum == 1) bounceAngle = Math.PI - bounceAngle; //reverse direction
+			var vNew = toComponentVectors(curPuckSpeed,bounceAngle);
+			this.vx = vNew.vx;
+			this.vy = vNew.vy;
+
+			collided = true;
+		},
+		getRandVelocity : function() {
+			var angle = Math.random() * DEFAULT_ANGLE*2 - DEFAULT_ANGLE;  //-default -> default
+			angle = (Math.random() > .5 ? angle : Math.PI-angle);
+			return Util.toComponentVectors(DEFAULT_SPEED,angle)
 		},
 		reset : function(vx, vy) {
-
+			this.x 	= 0;
+			this.y 	= 0;
+			this.vx	= vx;
+			this.vy	= vy;
 		}
 	};
 
@@ -110,4 +146,51 @@ var Puck = (function() {
 
 var Paddle = (function() {
 
+	var c = function(x, y, width, height, element) {
+		// Private variables
+
+		// Private functions
+		function convertY(yPos) {
+			return yPos - this.startY;
+		}
+
+		// Public variables
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.offset = 10;        // Space between wall and paddle
+		this.startY = y;         // Initial Y (for frame of reference)
+
+		this.minY = this.height/2;
+		this.maxY = HEIGHT - this.height/2;
+
+		this.element = element;
+
+		// Public functions
+	};
+
+	c.prototype = {
+		updatePosition : function(mouseY) {
+			this.y = Util.clamp(this.minY, this.convertY(mouseY), this.maxY);
+
+			this.element.data({
+				y : this.y
+			});
+		},
+	};
+
+	return c;
 })();
+
+var Util = {
+	toComponentVectors : function(speed,angle) {
+		return {
+			vx: speed*Math.cos(angle),
+			vy: speed*Math.sin(angle)
+		}
+	},
+	clamp : function(min, x, max) {
+		return Math.max(min, Math.min(x, max));
+	}
+}
