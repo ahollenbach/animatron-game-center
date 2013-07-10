@@ -3,14 +3,13 @@ define(['games/racer/util','games/racer/common'], function (Util,C) {
 var racer = {}
 
 //var centrifugal    = .3;                     // centrifugal force multiplier when going around curves
-var offRoadDecel   = 0.99;                    // speed multiplier when off road (e.g. you lose 2% speed each update frame)
 
 var accel          =  C.maxSpeed/5;             // acceleration rate - tuned until it 'felt' right
 var breaking       = -C.maxSpeed;               // deceleration rate when braking
 var decel          = -C.maxSpeed/5;             // 'natural' deceleration rate when neither accelerating, nor braking
 var offRoadDecel   = -C.maxSpeed/2;             // off road deceleration is somewhere in between
 var offRoadLimit   =  C.maxSpeed/4;             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
-var totalCars      = 10;                        // total number of cars on the road
+var totalCars      = 0;                        // total number of cars on the road
 
 var ax             = 0;
 
@@ -46,11 +45,11 @@ racer.update = function(dt) {
   var speedPercent  = s.player.speed/C.maxSpeed;
   ax            = speedPercent/2; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
   var dx = 2*speedPercent*dt;
-  startPosition = s.player.z;
   updateCars(dt, C.playerSegment, playerW);
+  //updateOpponents(dt, C.playerSegment, playerW);
 
   s.player.z = Util.increase(s.player.z, dt * s.player.speed, C.trackLength);
-  
+
   // adjust change in x position
   if (C.keyLeft) {
     s.player.dx = Math.max(Util.accelerate(s.player.dx, -ax, dt),-dx);
@@ -64,7 +63,7 @@ racer.update = function(dt) {
   s.player.x += s.player.dx;
   var outwardForce = dx * C.playerSegment.curve / 4;
   s.player.x = s.player.x - outwardForce;
-  
+
 
   if (C.keyFaster)
     s.player.speed = Util.accelerate(s.player.speed, accel, dt);
@@ -107,7 +106,7 @@ racer.update = function(dt) {
   s.player.speed = Util.limit(s.player.speed, 0, C.maxSpeed); // or exceed maxSpeed
 
   if (s.player.z > s.camera.playerZ) {
-    if (s.currentLapTime && (startPosition < s.camera.playerZ)) {
+    if (s.currentLapTime && (0 < s.camera.playerZ)) {
       s.lastLapTime    = s.currentLapTime;
       s.currentLapTime = 0;
       s.lap++;
@@ -123,30 +122,20 @@ racer.update = function(dt) {
 
 function updateCars(dt, playerSegment, playerW) {
   var n, car, oldSegment, newSegment;
-  for(n = 0 ; n < cars.length ; n++) {
-    car         = cars[n];
+  for(n = 0 ; n < C.cars.length ; n++) {
+    car         = C.cars[n];
     oldSegment  = racer.findSegment(car.z);
     car.offset  = car.offset + updateCarOffset(car, oldSegment, playerSegment, playerW);
-    car._z      = car.z;
+    car._z = car.z;
     car.z       = Util.increase(car.z, dt * car.speed, C.trackLength);
     car.percent = Util.percentRemaining(car.z, C.segmentLength); // useful for interpolation during rendering phase
     newSegment  = racer.findSegment(car.z);
     if (oldSegment != newSegment) {
-      index = oldSegment.cars.indexOf(car);
+      var index = oldSegment.cars.indexOf(car);
       oldSegment.cars.splice(index, 1);
       newSegment.cars.push(car);
     }
     if(car.z<car._z) car.lap++;
-    //checkPlace(car,s.camera.playerZ)
-  }
-}
-var xyz=0;
-function checkPlace(car) {
-  if(car.z%C.trackLength > s.player.z%C.trackLength && car._z%C.trackLength < s.player.z%C.trackLength && car.speed > s.player.speed) {
-    s.carsPassed--;
-  }
-  if(car.z%C.trackLength < s.player.z%C.trackLength && car._z%C.trackLength > s.player.z%C.trackLength && car.speed < s.player.speed) {
-    s.carsPassed++;
   }
 }
 
@@ -370,7 +359,7 @@ function resetSprites() {
 }
 
 function resetCars() {
-  cars = [];
+    C.cars = [];
   var n, car, segment, offset, z, sprite, speed;
   for (var n = 0 ; n < totalCars ; n++) {
     offset = Math.random() * Util.randomChoice([-0.8, 0.8]);
@@ -380,7 +369,7 @@ function resetCars() {
     car = { offset: offset, z: z, sprite: sprite, speed: speed, lap: 1};
     segment = racer.findSegment(car.z);
     segment.cars.push(car);
-    cars.push(car);
+      C.cars.push(car);
   }
 }
 

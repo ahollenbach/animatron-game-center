@@ -5,30 +5,10 @@ const SENTINEL        = Math.pow(2,32) - 1;
 //=========================================================================
 
 var Dom = {
-
   get:  function(id)                     { return ((id instanceof HTMLElement) || (id === document)) ? id : document.getElementById(id); },
-  set:  function(id, html)               { Dom.get(id).innerHTML = html;                        },
   on:   function(ele, type, fn, capture) { Dom.get(ele).addEventListener(type, fn, capture);    },
-  un:   function(ele, type, fn, capture) { Dom.get(ele).removeEventListener(type, fn, capture); },
-  show: function(ele, type)              { Dom.get(ele).style.display = (type || 'block');      },
-  blur: function(ev)                     { ev.target.blur();                                    },
-
-  addClassName:    function(ele, name)     { Dom.toggleClassName(ele, name, true);  },
-  removeClassName: function(ele, name)     { Dom.toggleClassName(ele, name, false); },
-  toggleClassName: function(ele, name, on) {
-    ele = Dom.get(ele);
-    var classes = ele.className.split(' ');
-    var n = classes.indexOf(name);
-    on = (typeof on == 'undefined') ? (n < 0) : on;
-    if (on && (n < 0))
-      classes.push(name);
-    else if (!on && (n >= 0))
-      classes.splice(n, 1);
-    ele.className = classes.join(' ');
-  },
 
   storage: window.localStorage || {}
-
 }
 
 //=============================================================================
@@ -71,7 +51,7 @@ var Game = {
           now    = null,
           last   = Util.timestamp(),
           dt     = 0,
-          gdt    = 0;
+          gdt    = 0,
           curLap = 1;
 
       Dom.storage.fast_lap_time = Dom.storage.fast_lap_time || 180;
@@ -90,9 +70,9 @@ var Game = {
                       }
                     })
                     .paint(function(ctx) {
-                      skyOffset  = Util.increase(skyOffset,  skySpeed  * C.playerSegment.curve * (s.player.z-startPosition)/C.segmentLength, 1);
-                      hillOffset = Util.increase(hillOffset, hillSpeed * C.playerSegment.curve * (s.player.z-startPosition)/C.segmentLength, 1);
-                      treeOffset = Util.increase(treeOffset, treeSpeed * C.playerSegment.curve * (s.player.z-startPosition)/C.segmentLength, 1);
+                      skyOffset  = Util.increase(skyOffset,  skySpeed  * C.playerSegment.curve * (s.player.z-0)/C.segmentLength, 1);
+                      hillOffset = Util.increase(hillOffset, hillSpeed * C.playerSegment.curve * (s.player.z-0)/C.segmentLength, 1);
+                      treeOffset = Util.increase(treeOffset, treeSpeed * C.playerSegment.curve * (s.player.z-0)/C.segmentLength, 1);
 
                       render(ctx);
                     });
@@ -223,23 +203,7 @@ var Game = {
       Dom.on(result[n], 'load', onload);
       result[n].src = "js/games/racer/images/" + name + ".png";
     }
-  },
-
-  //---------------------------------------------------------------------------
-
-  playMusic: function() {
-    var music = Dom.get('music');
-    music.loop = true;
-    music.volume = 0.05; // shhhh! annoying music!
-    music.muted = (Dom.storage.muted === "true");
-    music.play();
-    Dom.toggleClassName('mute', 'on', music.muted);
-    Dom.on('mute', 'click', function() {
-      Dom.storage.muted = music.muted = !music.muted;
-      Dom.toggleClassName('mute', 'on', music.muted);
-    });
   }
-
 }
 
 Game.initGame = function(mode,duration,aiName) {

@@ -15,6 +15,7 @@ common = {
   playerSegment  : {},
   segments       : [],                      // array of road segments
   cars           : [],                      // array of cars on the road
+  opponents      : [],
   trackLength    : null,                    // z length of entire track (computed)
   keyLeft        : false,
   keyRight       : false,
