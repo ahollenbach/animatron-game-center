@@ -39,9 +39,6 @@
 // 	return c;
 // })();
 
-const WIDTH = 600;
-const HEIGHT = 450;
-
 const Direction = {
 	TOP : "top",
 	BOTTOM : "bottom",
@@ -145,8 +142,9 @@ var Puck = (function() {
 })();
 
 var Paddle = (function() {
+	var paddleId = 0;
 
-	var c = function(x, y, width, height, element) {
+	var c = function(x, y) {
 		// Private variables
 
 		// Private functions
@@ -157,17 +155,26 @@ var Paddle = (function() {
 		// Public variables
 		this.x = x;
 		this.y = y;
-		this.width = width;
-		this.height = height;
+		this.width = 14;
+		this.height = 80;
 		this.offset = 10;        // Space between wall and paddle
 		this.startY = y;         // Initial Y (for frame of reference)
+
+		this.oldState;
 
 		this.minY = this.height/2;
 		this.maxY = HEIGHT - this.height/2;
 
-		this.element = element;
+		this.element;
+		// TODO: Define element here
 
 		// Public functions
+		this.storeState = function() {
+			this.oldState = {
+				x : this.x, 
+				y : this.y
+			};
+		};
 	};
 
 	c.prototype = {
@@ -194,3 +201,178 @@ var Util = {
 		return Math.max(min, Math.min(x, max));
 	}
 }
+
+var GamePlayer (function() {
+
+	var c = function(gameInstance, playerInstance) {
+		this.instance = playerInstance;
+		this.game = gameInstance;
+
+		this.userid;
+		this.inputs = [];
+
+		// TODO: Fix this constructor
+		this.paddle = new Paddle();
+	}
+
+})();
+
+var PongCore = (function() {
+
+	var c = function(gameInstance) {
+		this.instance = gameInstance;
+
+		this.server = this.instance !== undefined;
+
+		this.world = {
+			width : 600, 
+			height : 450
+		};
+
+		this.world.halfWidth = this.world.width / 2;
+		this.world.halfHeight = this.world.height / 2;
+
+		if (this.server) {
+			this.players = {
+				self : new GamePlayer(this, this.instance.host),
+				other : new GamePlayer(this, this.instance.client)
+			};
+
+
+		} else  {
+			this.players = {
+				self : new GamePlayer(this),
+				other : new GamePlayer(this)
+			};
+
+			// TODO: Differentiation between player 1 and two and their respective sides
+		}
+
+		// TODO: Fix constructor
+		this.puck = new Puck();
+
+		this.step = 1 / 60;
+		this.dt;
+		this.gdt = 0;
+
+		if (!this.server) {
+			this.viewport;
+			this.mousePosition;
+
+			window.addEventListener(function(e) {
+				if (this.viewport) {
+					var rect = canvas.getBoundingClientRect();
+				    this.mousePosition = {
+				    	x : e.clientX - rect.left,
+				    	y : e.clientY - rect.top
+				    };
+				}
+			});
+
+			this.clientConnectToServer();
+		}
+	};
+
+	c.prototype = {
+		//=============================================================================
+		// Common Functions
+		//=============================================================================
+		update : function(t) {
+			this.dt = t - this._._appliedAt;
+			this.gdt += dt;
+
+			while (this.gdt >= this.step) {
+				this.gdt -= this.step;
+
+				if (this.server)
+					this.serverUpdate();
+				else
+					this.clientUpdate();
+			}
+		},
+		// updatePhysics : function(t) {
+		// 	this.dt = t - this._._appliedAt;
+		// 	this.gdt += dt;
+
+		// 	while (this.gdt >= this.step) {
+		// 		this.gdt -= this.step;
+
+		// 		if (this.server)
+		// 			this.serverUpdatePhysics();
+		// 		else
+		// 			this.clientUpdatePhysics();
+		// 	}
+		// },
+		//=============================================================================
+		// Server Side Functions
+		//=============================================================================
+		serverUpdatePhysics : function() {
+			// Player 1
+			this.players.self.storeState();
+			var newY = this.processInput(this.players.self);
+			this.players.self.y = newY;
+
+			// Player 2
+			this.players.other.storeState();
+			newY = this.processInput(this.players.other);
+			this.players.other.y = newY;
+
+			// Check for collisions with puck using "collides"
+
+			// Clear inputs
+			this.players.self.inputs = [];
+			this.players.other.inputs = [];
+		},
+		serverUpdate : function() {
+			this.lastState = {
+				hostPosition : {
+					x : this.players.self.x,
+					y : this.players.self.y
+				},
+				clientPosition : {
+					x : this.players.other.x,
+					y : this.palyers.other.y
+				},
+				timeStamp : (new Date()).getTime();
+			};
+
+			if (this.players.self.instance) 
+				this.players.self.instance.emit('server_update', this.lastState);
+
+			if (this.players.other.instance)
+				this.players.other.instance.emit('server_update', this.lastState);
+		},
+		serverHandleInput : function(client, y, timeStamp) {
+			var playerClient = (client.userid == this.players.self.instance.userid) ?
+				this.players.self :
+				this.players.other;
+
+			playerClient.inputs.push({ y : y, time : (new Date()).getTime() });
+		},
+		//=============================================================================
+		// Client Side Functions
+		//=============================================================================
+		clientUpdate : function() {
+
+		},
+		clientUpdatePhysics : function() {
+			this.players.self.storeState();
+			var newY = this.processInput(this.players.self);
+			this.players.self.y = newY;
+
+			// TODO: Update puck location
+		},
+		clientHandleInput : function() {
+
+		},
+		clientConnectToServer : function() {
+			// Make connection to server
+			this.socket = io.connect(window.location.origin + "/game");
+
+			this.socket.on('start', this.clientOnStart.bind(this));
+			this.socket.on('state', this.clientOnState.bind(this));
+		}
+	}
+
+	return c;
+}();
