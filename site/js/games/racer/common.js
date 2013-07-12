@@ -22,14 +22,20 @@ common = {
   keyFaster      : false,
   keySlower      : false,
   raceActive     : true,
-  lanes          : 3                        // number of lanes
+  lanes          : 3,                        // number of lanes
 }
-common.step      = 1/common.fps;                     // how long is each frame (in seconds)
-common.maxSpeed  = common.segmentLength/common.step; // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
+common.step         = 1/common.fps;                     // how long is each frame (in seconds)
+common.maxSpeed     = common.segmentLength/common.step; // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
+common.accel        =  common.maxSpeed/5;                    // acceleration rate - tuned until it 'felt' right
+common.breaking     = -common.maxSpeed;                      // deceleration rate when braking
+common.decel        = -common.maxSpeed/5;                    // 'natural' deceleration rate when neither accelerating, nor braking
+common.offRoadDecel = -common.maxSpeed/2;                    // off road deceleration is somewhere in between
+common.offRoadLimit =  common.maxSpeed/4;                    // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
+
 
 // CAR REFERENCE, all cars on the road should have a .car attribute with this object.
-// Make sure to use jQuery.extend(true, {}, common.car) or your values will be global!
-var car = {
+// Make sure to use jQuery.extend(true, {}, common.carDefault) or your values will be global!
+common.carDefault = {
   x                : 0,                     // car x offset from center of road (-1 to 1 to stay independent of roadWidth)
   z                : 0,                     // car's absolute Z position
   _z               : 0,                     // last z position
@@ -40,7 +46,6 @@ var car = {
   lap              : 1,                     // current lap
   percent          : 0,                     // useful for interpolation during rendering phase
 }
-common.carDefault = car;
 
 
 //=============================================================================

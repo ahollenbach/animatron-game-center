@@ -2,130 +2,24 @@ define(['games/racer/util','games/racer/common'], function (Util,C) {
 
 var racer = {}
 
-//var centrifugal    = .3;                      // centrifugal force multiplier when going around curves
+var centrifugal    = .3;                      // centrifugal force multiplier when going around curves
 
-var accel          =  C.maxSpeed/5;             // acceleration rate - tuned until it 'felt' right
-var breaking       = -C.maxSpeed;               // deceleration rate when braking
-var decel          = -C.maxSpeed/5;             // 'natural' deceleration rate when neither accelerating, nor braking
-var offRoadDecel   = -C.maxSpeed/2;             // off road deceleration is somewhere in between
-var offRoadLimit   =  C.maxSpeed/4;             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
 var totalCars      = 0;                         // total number of cars on the road
-
-// player state
-var player = {
-  x                : 0,                     // player x offset from center of road (-1 to 1 to stay independent of roadWidth)
-  z                : 0,                     // player's absolute Z position
-  _z               : 0,                     // last z position
-  dx               : 0,                     // current horizontal velocity
-  speed            : 0,                     // current speed
-  currentLapTime   : 0,                     // current lap time
-  lastLapTime      : null,                  // last lap time
-  lap              : 1,
-  place            : null,                  // position in the race, calculated each step
-  finished         : false,                 // boolean whether the given player is finished
-}
 
 //=========================================================================
 // UPDATE THE GAME WORLD
 //=========================================================================
 racer.update = function(dt) {
-  C.playerSegment = racer.findSegment(player.z);
-  var playerW       = C.SPRITES.CAR_STRAIGHT.w * C.SPRITES.SCALE;
+  if(C.cars.length == 0) return;
 
-  //updateCars(dt, C.playerSegment, playerW);
-  updateOpponents(dt);
-  if(!player.finished) {
-    updatePlayerPosition(dt, playerW);
-    player.place = getPlace();
-  }
-
-  return player;
+  C.playerSegment = racer.findSegment(C.cars[0].car.z);
+  updateCars(dt);
 }
 
-//-------------------------------------------------------------------------
-function updatePlayerPosition(dt, playerW) {
-  var n, car, carW, sprite, spriteW;
-  var speedPercent  = player.speed/C.maxSpeed;
-  var ax            = speedPercent/2; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
-  var dx = 2*speedPercent*dt;
-
-  player._z = player.z;
-  player.z = Util.increase(player.z, dt * player.speed, C.trackLength);
-
-  // adjust change in x position
-  if (C.keyLeft) {
-    player.dx = Math.max(Util.accelerate(player.dx, -ax, dt),-dx);
-  }
-  else if (C.keyRight) {
-    player.dx = Math.min(Util.accelerate(player.dx, ax, dt),dx);
-  }
-  else {
-    if(player.x != 0) player.dx -= player.dx/2;
-  }
-  player.x += player.dx;
-  var outwardForce = dx * C.playerSegment.curve / 4;
-  player.x = player.x - outwardForce;
-
-
-  if (C.keyFaster)
-    player.speed = Util.accelerate(player.speed, accel, dt);
-  else if (C.keySlower)
-    player.speed = Util.accelerate(player.speed, breaking, dt);
-  else
-    player.speed = Util.accelerate(player.speed, decel, dt);
-
-
-  if ((player.x < -1) || (player.x > 1)) {
-    if (player.speed > offRoadLimit)
-      player.speed = Util.accelerate(player.speed, offRoadDecel, dt);
-    
-    for(n = 0 ; n < C.playerSegment.sprites.length ; n++) {
-      sprite  = C.playerSegment.sprites[n];
-      spriteW = sprite.source.w * C.SPRITES.SCALE;
-      if (Util.overlap(player.x, playerW, sprite.offset + spriteW/2 * (sprite.offset > 0 ? 1 : -1), spriteW)) {
-        // collided with something, stop the car
-        player.speed = C.maxSpeed/5;
-        //player.speed = 0;
-        //player.reset = true;
-        player.z = player._z;
-        //TODO: Add explosion
-        break;
-      }
-    }
-  }
-
-  for(n = 0 ; n < C.playerSegment.cars.length ; n++) {
-    opponent  = C.playerSegment.cars[n];
-    carW = opponent.sprite.w * C.SPRITES.SCALE;
-    if (player.speed > opponent.car.speed) {
-      if (Util.overlap(player.x, playerW, opponent.car.x, carW, 0.8)) {
-        player.speed    = opponent.car.speed * (opponent.car.speed/player.speed);
-        player.z = player._z;
-        break;
-      }
-    }
-  }
-
-  player.x = Util.limit(player.x, -3, 3);     // dont ever let it go too far out of bounds
-  player.speed = Util.limit(player.speed, 0, C.maxSpeed); // or exceed maxSpeed
-
-  if (C.raceActive) {
-    if (player.currentLapTime && (player._z > player.z)) {
-      player.lastLapTime    = player.currentLapTime;
-      player.lap++;
-      if(player.lap > C.numLaps) C.raceActive = false;
-      else player.currentLapTime = 0;
-    }
-    else {
-      player.currentLapTime += dt;
-    }
-  }
-}
-
-function updateOpponents(dt) {
-  var n, car, oldSegment, newSegment;
+function updateCars(dt) {
+  var n, car;
   for(n = 0 ; n < C.cars.length ; n++) {
-    car         = C.cars[n];
+    car = C.cars[n];
     car.move(dt);
   }
 }
@@ -134,12 +28,14 @@ racer.findSegment = function (z) {
   return C.segments[Math.floor(z/C.segmentLength) % C.segments.length]; 
 }
 
-function getPlace() {
+// Takes the index of the car you are trying to get the place of (0 for you)
+racer.getPlace = function(index) {
+  var you = C.cars[index].car;
   var place = 1;
   for(n = 0 ; n < C.cars.length ; n++) {
-    opponent = C.cars[n];
-    //if(player.z < 10000) console.log(opponent.car.lap, opponent.car.z, player.lap, player.z)
-    if(opponent.car.lap > player.lap || (opponent.car.lap == player.lap && opponent.car.z > player.z)) place++;
+    if(n == index) continue;
+    opponent = C.cars[n].car;
+    if(opponent.lap > you.lap || (opponent.lap == you.lap && opponent.z > you.z)) place++;
   }
   return place;
 }

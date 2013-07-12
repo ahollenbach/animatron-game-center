@@ -1,4 +1,4 @@
-define(['libs/hardcore','games/racer/racer.core','games/racer/util','games/racer/common'], function (Animatron, Core, Util, C) {
+define(['libs/hardcore','games/racer/racer.core','games/racer/util','games/racer/common','games/racer/humanPlayer'], function (Animatron, Core, Util, C, humanModule) {
 const SENTINEL        = Math.pow(2,32) - 1; 
 //=========================================================================
 // minimalist DOM helpers
@@ -23,7 +23,7 @@ var camera         = {
     fieldOfView    : 100,                     // angle (degrees) for field of view
     height         : 1000,                    // z height of camera
     depth          : null,                    // z distance camera is from screen (computed)
-    playerZ        : null,                    // player relative z distance from camera (computed)
+    playerZ        : null                     // player relative z distance from camera (computed)
 };
 camera.depth           = 1 / Math.tan((camera.fieldOfView/2) * Math.PI/180);
 camera.playerZ         = (camera.height * camera.depth);
@@ -36,7 +36,8 @@ var hillOffset     = 0;                       // current hill scroll offset
 var treeOffset     = 0;                       // current tree scroll offset
 var resolution     = height/480;
 var fogDensity     = 1;                       // exponential fog density
-
+var player         = null;                    // you! (The local racer being controlled)
+var background, sprites;
 
 //=========================================================================
 // GAME LOOP helpers
@@ -66,7 +67,12 @@ var Game = {
 
 
       var b = Builder._$;
-      player = update(step);
+      update(step);
+
+      var humanPlayer = new humanModule();
+      humanPlayer.setPlayerNum(0);
+      C.cars.push(humanPlayer)
+      player = C.cars[0];
 
       var aiName = 'basic_ai';
       require(["games/racer/ai/" + aiName], function(aiModule) {
@@ -88,9 +94,9 @@ var Game = {
                       }
                     })
                     .paint(function(ctx) {
-                      skyOffset  = Util.increase(skyOffset,  skySpeed  * C.playerSegment.curve * (player.z-player._z)/C.segmentLength, 1);
-                      hillOffset = Util.increase(hillOffset, hillSpeed * C.playerSegment.curve * (player.z-player._z)/C.segmentLength, 1);
-                      treeOffset = Util.increase(treeOffset, treeSpeed * C.playerSegment.curve * (player.z-player._z)/C.segmentLength, 1);
+                      skyOffset  = Util.increase(skyOffset,  skySpeed  * C.playerSegment.curve * (player.car.z-player.car._z)/C.segmentLength, 1);
+                      hillOffset = Util.increase(hillOffset, hillSpeed * C.playerSegment.curve * (player.car.z-player.car._z)/C.segmentLength, 1);
+                      treeOffset = Util.increase(treeOffset, treeSpeed * C.playerSegment.curve * (player.car.z-player.car._z)/C.segmentLength, 1);
 
                       render(ctx);
                     });
@@ -129,8 +135,7 @@ var Game = {
                               .rect([0,0],[2,hudWidth/2])
                               .reg([0,hudWidth/4])
                               .modify(function(t) {
-                                if(!s) return;
-                                this.angle = Util.toRadians(13/12*player.speed/100 - 105); // scale
+                                this.angle = Util.toRadians(13/12*player.car.speed/100 - 105); // scale
                               })
 
       var speedometerFull = b().circle([0,canvas.height-hudHeight/2-hudWidth/2-20],hudWidth/2)
@@ -147,11 +152,11 @@ var Game = {
                         .fill('rgba(0, 0, 0, 0.7)')
                         .reg([-hudWidth/2,-hudHeight/2])
                         .move([canvas.width-(hudWidth+10),10])
-                        .add(genElem(positionDisp    , [ margin, 0            ], "1 / " + C.numRacers                 , "Position"      ))
-                        .add(genElem(lapCounter      , [ margin, 0            ], "1 / " + C.numLaps                   , "Lap"        , 0))
-                        .add(genElem(curLapTimeDisp  , [ margin, yOffset      ], "00:00.00"                           , "Current Lap"   ))
-                        .add(genElem(fastLapTimeDisp , [ margin, yOffset*2    ], "- -:- -.- -"                           , "Fastest Lap"   ))
-                        .add(genElem(lastLapTimeDisp , [ margin, yOffset*3    ], "00:00.00"                           , "Last Lap"      ))
+                        .add(genElem(positionDisp    , [ margin, 0            ], "1 / " + C.numRacers , "Position"      ))
+                        .add(genElem(lapCounter      , [ margin, 0            ], "1 / " + C.numLaps   , "Lap"        , 0))
+                        .add(genElem(curLapTimeDisp  , [ margin, yOffset      ], "00:00.00"           , "Current Lap"   ))
+                        .add(genElem(fastLapTimeDisp , [ margin, yOffset*2    ], "- -:- -.- -"        , "Fastest Lap"   ))
+                        .add(genElem(lastLapTimeDisp , [ margin, yOffset*3    ], "00:00.00"           , "Last Lap"      ))
                         .add(speedometerFull)
 
       function genElem(elem, pos, val, labelVal, offX, offY) {
@@ -172,19 +177,18 @@ var Game = {
       
       hud.modify(function(t) {
         if (C.raceActive) {
-          if (player.lap > curLap) {
-            curLap = player.lap;
+          if (player.car.lap > curLap) {
+            curLap = player.car.lap;
             
-            changeText(lapCounter,[margin,0],player.lap + " / " + C.numLaps,false,0);
-            if(player.lastLapTime <= Util.toFloat(Dom.storage.fast_lap_time) && player.lastLapTime > 0) {
-              Dom.storage.fast_lap_time = player.lastLapTime;
-              changeText(fastLapTimeDisp,[margin,yOffset*2],"" + formatTime(player.lastLapTime),false);
+            changeText(lapCounter,[margin,0],player.car.lap + " / " + C.numLaps,false,0);
+            if(player.car.lastLapTime <= Util.toFloat(Dom.storage.fast_lap_time) && player.car.lastLapTime > 0) {
+              Dom.storage.fast_lap_time = player.car.lastLapTime;
+              changeText(fastLapTimeDisp,[margin,yOffset*2],"" + formatTime(player.car.lastLapTime),false);
             }
-            changeText(lastLapTimeDisp,[margin,yOffset*3],"" + formatTime(player.lastLapTime),false);
+            changeText(lastLapTimeDisp,[margin,yOffset*3],"" + formatTime(player.car.lastLapTime),false);
           }
-
-          changeText(speedometerText,[0,0],Math.round(player.speed/100) + " mph",false,-67,10);
-          changeText(curLapTimeDisp,[margin,yOffset],"" + formatTime(player.currentLapTime),false);
+          changeText(speedometerText,[0,0],Math.round(player.car.speed/100) + " mph",false,-67,10);
+          changeText(curLapTimeDisp,[margin,yOffset],"" + formatTime(player.car.currentLapTime),false);
           changeText(positionDisp,[margin,0],player.place + " / " + C.numRacers,false);
         }
       });
@@ -320,11 +324,10 @@ var Render = {
     var bounce = (1.5 * Math.random() * speedPercent * resolution) * Util.randomChoice([-1,1]);
     var sprite;
     updown = updown < 5 ? (updown < -11 ? 0 : 1) : 2; // custom tuned, what feels right
-    var dx = player.dx*100;
+    var dx = player.car.dx*100;
     var lrOrient = Math.abs(dx-0);
     if (lrOrient < .1) lrOrient = 0;
     else               lrOrient = Util.clamp(0,Math.ceil(lrOrient),2) * Util.getSign(dx);
-
     sprite = C.SPRITES.CAR_ORIENT[updown][lrOrient+3];
     Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY + bounce, -0.5, -1,null,true);
   },
@@ -378,14 +381,13 @@ function addZeros(num) {
 // RENDER THE GAME WORLD
 //=========================================================================
 function render(ctx) {
-  if(!s) return;
-  var cameraLocation = player.z-camera.playerZ;
+  var cameraLocation = player.car.z-camera.playerZ;
   cameraLocation = cameraLocation < 0 ? C.trackLength + cameraLocation : cameraLocation;
 
   var baseSegment   = Core.findSegment(cameraLocation);
   var basePercent   = Util.percentRemaining(cameraLocation, C.segmentLength);
-  var playerSegment = Core.findSegment(player.z);
-  var playerPercent = Util.percentRemaining(player.z, C.segmentLength);
+  var playerSegment = Core.findSegment(player.car.z);
+  var playerPercent = Util.percentRemaining(player.car.z, C.segmentLength);
   var playerY       = Util.interpolate(playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent);
   var maxy          = height;
 
@@ -405,13 +407,13 @@ function render(ctx) {
     segment.looped = segment.index < baseSegment.index;
     segment.fog    = Util.exponentialFog(n/C.drawDistance, fogDensity);
     segment.clip   = maxy;
-    Util.project(segment.p1, (player.x * C.roadWidth) - x,      playerY + camera.height , cameraLocation - (segment.looped ? C.trackLength : 0), camera.depth, width, height, C.roadWidth);
-    Util.project(segment.p2, (player.x * C.roadWidth) - x - dx, playerY + camera.height, cameraLocation - (segment.looped ? C.trackLength : 0), camera.depth, width, height, C.roadWidth);
+    Util.project(segment.p1, (player.car.x * C.roadWidth) - x,      playerY + camera.height , cameraLocation - (segment.looped ? C.trackLength : 0), camera.depth, width, height, C.roadWidth);
+    Util.project(segment.p2, (player.car.x * C.roadWidth) - x - dx, playerY + camera.height, cameraLocation - (segment.looped ? C.trackLength : 0), camera.depth, width, height, C.roadWidth);
 
     x  = x + dx;
     dx = dx + segment.curve;
 
-    if ((segment.p1.camera.z <= camera.depth)      || // behind us
+    if ((segment.p1.camera.z <= camera.depth)        || // behind us
         (segment.p2.screen.y >= segment.p1.screen.y) || // back face cull
         (segment.p2.screen.y >= maxy))                  // clip by (already rendered) hill
     {
@@ -433,8 +435,8 @@ function render(ctx) {
 
   for(n = (C.drawDistance-1) ; n > 0 ; n--) {
     segment = C.segments[(baseSegment.index + n) % C.segments.length];
-    var bp = segment.cars.length;
-    for(i = 0 ; i < segment.cars.length ; i++) {
+    var opponent;
+    for(i = 1 ; i < segment.cars.length ; i++) {
       opponent    = segment.cars[i];
       sprite      = opponent.sprite;
       spriteScale = Util.interpolate(segment.p1.screen.scale, segment.p2.screen.scale, opponent.car.percent);
@@ -452,11 +454,11 @@ function render(ctx) {
     }
 
     if (segment == playerSegment) {
-      Render.player(ctx, width, height, resolution, C.roadWidth, sprites, player.speed/C.maxSpeed,
+      Render.player(ctx, width, height, resolution, C.roadWidth, sprites, player.car.speed/C.maxSpeed,
                     camera.depth/camera.playerZ,
                     width/2,
                     (height/2) - (camera.depth/camera.playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height/2),
-                    player.speed * (C.keyLeft ? -1 : C.keyRight ? 1 : 0),
+                    player.car.speed * (C.keyLeft ? -1 : C.keyRight ? 1 : 0),
                     playerSegment.p2.world.y - playerSegment.p1.world.y);
     }
   }
