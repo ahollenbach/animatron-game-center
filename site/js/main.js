@@ -36,6 +36,7 @@ function getTemplate(id) {
 
 var globalEvents = {};
 
+// Backdoor for testing
 function ps() {
     globalEvents.trigger('toSessionView', 1, { name: "Pong", duration: { type: 'point', cond: 5} });
 }
@@ -62,5 +63,29 @@ require(
         new GlobalView();
     });
 
-    //Backbone.history.start();
+    // Hide some stuff when the cursor hasn't moved
+    // Thanks to Joseph Wegner: https://gist.github.com/josephwegner/1228975
+    $(document).ready(function() {  
+        var idleTimer;
+        var forceHide = false;
+        var body = $('body'), toggles = $('.toggle');
+ 
+        body.css('cursor', 'none');
+        toggles.css('visibility', 'hidden');
+ 
+        body.mousemove(function(ev) {
+            if(!forceHide) {
+                body.css('cursor', '');
+                toggles.css('visibility', 'visible'); 
+                clearTimeout(idleTimer); 
+                idleTimer = setTimeout(function() {
+                    body.css('cursor', 'none');
+                    toggles.css('visibility', 'hidden');
+
+                    forceHide = true;
+                    setTimeout(function() { forceHide = false; }, 200);
+                }, 1000);
+            }
+        });
+    });
 });

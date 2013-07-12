@@ -7,6 +7,7 @@ var common = {};
 //=============================================================================
 common = {
   fps            : 60,                      // how many 'update' frames per second
+  drawDistance   : 300,                     // number of segments to draw
   roadWidth      : 2000,                    // actually half the roads width, easier math if the road spans from -roadWidth to +roadWidth
   segmentLength  : 200,                     // length of a single segment
   rumbleLength   : 3,                       // number of segments per red/white rumble strip
@@ -15,15 +16,31 @@ common = {
   playerSegment  : {},
   segments       : [],                      // array of road segments
   cars           : [],                      // array of cars on the road
-  opponents      : [],
   trackLength    : null,                    // z length of entire track (computed)
   keyLeft        : false,
   keyRight       : false,
   keyFaster      : false,
   keySlower      : false,
+  raceActive     : true,
+  lanes          : 3                        // number of lanes
 }
-common.step      = 1/common.fps;                   // how long is each frame (in seconds)
+common.step      = 1/common.fps;                     // how long is each frame (in seconds)
 common.maxSpeed  = common.segmentLength/common.step; // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
+
+// CAR REFERENCE, all cars on the road should have a .car attribute with this object.
+// Make sure to use jQuery.extend(true, {}, common.car) or your values will be global!
+var car = {
+  x                : 0,                     // car x offset from center of road (-1 to 1 to stay independent of roadWidth)
+  z                : 0,                     // car's absolute Z position
+  _z               : 0,                     // last z position
+  dx               : 0,                     // current horizontal velocity
+  speed            : 0,                     // current speed
+  currentLapTime   : 0,                     // current lap time
+  lastLapTime      : null,                  // last lap time
+  lap              : 1,                     // current lap
+  percent          : 0,                     // useful for interpolation during rendering phase
+}
+common.carDefault = car;
 
 
 //=============================================================================

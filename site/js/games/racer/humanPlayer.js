@@ -1,10 +1,10 @@
 // A basic AI implementation for the racing game
 define(['games/racer/util','games/racer/common','games/racer/racer.core'], function (Util,C,racer) {
 
-var basicAI = (function() {
-    var ai = function() {
-        this.maxSpeed = Math.random()*C.maxSpeed*0.7 + 0.95*C.maxSpeed;
-        this.accel    = this.maxSpeed/10 + Math.random()*this.maxSpeed/5;
+var humanPlayer = (function() {
+    var player = function() {
+        this.maxSpeed = C.maxSpeed;
+        this.accel    = this.maxSpeed/5;
         this.car = jQuery.extend(true, {}, C.carDefault);
         this.car.speed = 0;
         this.sprite = Util.randomChoice(C.SPRITES.CARS);
@@ -18,7 +18,7 @@ var basicAI = (function() {
         }
     };
 
-    ai.prototype = {
+    player.prototype = {
         move: function(dt) {
             oldSegment  = racer.findSegment(this.car.z);
             if(this.car.speed < this.maxSpeed) this.car.speed += this.accel*dt;
@@ -72,8 +72,8 @@ var basicAI = (function() {
         }
     };
 
-    return ai;
+    return p;
 })();
 
-return basicAI;
+return humanPlayer;
 });
