@@ -16,7 +16,7 @@ var humanPlayer = (function() {
         this.setPlayerNum = function(playerNum) {
             this.pNum  = playerNum;
             this.car.x = (playerNum%C.lanes - 1)*2/3; // Lines players up at -2/3, 0, 2/3
-            this.car.z = (C.trackLength-Math.floor(playerNum/C.lanes)*C.segmentLength*2)%C.trackLength;
+            this.car.z = (C.trackLength-Math.floor(playerNum/C.lanes)*C.segmentLength*5)%C.trackLength;
             segment = racer.findSegment(this.car.z);
             segment.cars.push(this);
         }
@@ -41,10 +41,19 @@ var humanPlayer = (function() {
             // regulate
             this.car.x = Util.limit(this.car.x, -3, 3);                 // dont ever let it go too far out of bounds
             this.car.speed = Util.limit(this.car.speed, 0, C.maxSpeed); // or exceed maxSpeed
-            
-            if (C.raceActive && !this.finished) {
+
+            newSegment  = racer.findSegment(this.car.z);
+            if (oldSegment != newSegment) {
+                var index = oldSegment.cars.indexOf(this);
+                oldSegment.cars.splice(index, 1);
+                newSegment.cars.push(this);
+            }
+
+            if(this.finished) return; //don't track once done, but you can still drive around
+            if(C.raceActive &&!this.finished) {
+                this.place = racer.getPlace(0);
                 if (this.car.currentLapTime && (this.car._z > this.car.z)) {
-                    this.car.lastLapTime    = this.car.currentLapTime;
+                    this.car.lapTimes.push(this.car.currentLapTime);
                     this.car.lap++;
                     if(this.car.lap > C.numLaps) {
                         this.finished = true;
@@ -56,17 +65,6 @@ var humanPlayer = (function() {
                 else {
                     this.car.currentLapTime += dt;
                 }
-            }
-
-            newSegment  = racer.findSegment(this.car.z);
-            if (oldSegment != newSegment) {
-                var index = oldSegment.cars.indexOf(this);
-                oldSegment.cars.splice(index, 1);
-                newSegment.cars.push(this);
-            }
-
-            if(!this.finished) {
-                this.place = racer.getPlace(0);
             }
         },
         steer : function(dt) {

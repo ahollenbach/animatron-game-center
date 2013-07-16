@@ -10,18 +10,20 @@ var totalCars      = 0;                         // total number of cars on the r
 // UPDATE THE GAME WORLD
 //=========================================================================
 racer.update = function(dt) {
-  if(C.cars.length == 0) return;
+  if(C.cars.length == 0 /*|| !C.raceActive*/) return; // for now, keep the world running even after finished
 
   C.playerSegment = racer.findSegment(C.cars[0].car.z);
   updateCars(dt);
 }
 
 function updateCars(dt) {
-  var n, car;
+  var n, car, carsFinished = 0;
   for(n = 0 ; n < C.cars.length ; n++) {
     car = C.cars[n];
     car.move(dt);
+    if(car.finished) carsFinished++;
   }
+  if(carsFinished == C.numRacers) C.raceActive = false;
 }
 
 racer.findSegment = function (z) {
@@ -220,7 +222,7 @@ function resetAmbientCars() {
     car = { offset: offset, z: z, sprite: sprite, speed: speed, lap: 1};
     segment = racer.findSegment(car.z);
     segment.cars.push(car);
-      C.cars.push(car);
+    C.cars.push(car);
   }
 }
 

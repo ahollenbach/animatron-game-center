@@ -38,6 +38,7 @@ var resolution     = height/480;
 var fogDensity     = 1;                       // exponential fog density
 var player         = null;                    // you! (The local racer being controlled)
 var background, sprites;
+var b              = Builder._$;
 
 //=========================================================================
 // GAME LOOP helpers
@@ -65,8 +66,6 @@ var Game = {
       //Dom.storage.fast_lap_time = Dom.storage.fast_lap_time || 180;
       Dom.storage.fast_lap_time = 180;
 
-
-      var b = Builder._$;
       update(step);
 
       var humanPlayer = new humanModule();
@@ -86,11 +85,15 @@ var Game = {
 
       var scene = b('scene')
                     .modify(function(t) {
-                      dt = t - this._._appliedAt;
-                      gdt = gdt + dt;
-                      while (gdt > step) {
-                        gdt = gdt - step;
-                        s = update(step);
+                      if(C.raceActive) {
+                        dt = t - this._._appliedAt;
+                        gdt = gdt + dt;
+                        while (gdt > step) {
+                          gdt = gdt - step;
+                          s = update(step);
+                        }
+                      } else if(t > 3 && t < 4) {   // Hack to start game (start it when t = 3)
+                        C.raceActive = true;
                       }
                     })
                     .paint(function(ctx) {
@@ -159,6 +162,26 @@ var Game = {
                         .add(genElem(lastLapTimeDisp , [ margin, yOffset*3    ], "00:00.00"           , "Last Lap"      ))
                         .add(speedometerFull)
 
+      var resultWidth = canvas.width*.5, resultHeight = canvas.height*.5;
+      var resultTextHeight = resultHeight/(C.numRacers+4);
+      var results = b('results').rect([0,0],[resultWidth,resultHeight])
+                                .fill('rgba(0, 0, 0, 0.7)')
+                                .move([resultWidth/2,resultHeight/2])
+                                .reg([-resultWidth/2,-resultHeight/2])
+      results.add(makeResult(b('results-header'), 0, "NAME", "TIME",resultTextHeight));
+      for(var i=0;i<C.numRacers;i++) {
+          results.add(makeResult(b(), i+1, "", "",resultTextHeight));
+      }
+      results.disable();
+      results.modify(function(t) {
+          var positions = updateResults();
+          for(var i=0;i<positions.length;i++) {
+              var p = positions[i];
+              makeResult(b(results.v.children[i+1]), i+1, p.name, round(p.time),resultTextHeight,p.pNum == 0);
+          }
+      });
+      scene.add(results)
+
       function genElem(elem, pos, val, labelVal, offX, offY) {
         return b().add(changeText(null,pos,labelVal, true, offX, offY))
                   .add(changeText(elem,pos,val,false, offX, offY))
@@ -173,26 +196,38 @@ var Game = {
         var pos   = label?pos: [ pos[0] + labelHeight, pos[1] + labelHeight ];
         return elem.text(pos,val,label?labelHeight:valueHeight,font).move([offX,offY]).fill(color);
       }
-                        
-      
+
+      // optional arg "you" is true if the result is you #customcodeisonlyway
+      function makeResult(elem,place,name,time,height,you) {
+            var isTitle = (place == 0);
+            while(name.length < 16) name += " ";
+            // ignore all the blech. It's a temporary solution until animatron supports text formatting.
+            return elem.text([margin + (!isTitle?44:0), margin + height*1.2*place],(isTitle ? "PLACE" : place) + "         " + (!isTitle?"     ":"") + name + time,height,font + (isTitle||you?" bold":"")).move([-resultWidth/2, -resultHeight/2]).fill('#EFEFEF');
+      }
+                 
       hud.modify(function(t) {
-        if (C.raceActive) {
+        if (!player.finished) {   // If you haven't finished yet
           if (player.car.lap > curLap) {
             curLap = player.car.lap;
-            
+            var lastLapTime = player.car.lapTimes[player.car.lapTimes.length-1];
             changeText(lapCounter,[margin,0],player.car.lap + " / " + C.numLaps,false,0);
-            if(player.car.lastLapTime <= Util.toFloat(Dom.storage.fast_lap_time) && player.car.lastLapTime > 0) {
-              Dom.storage.fast_lap_time = player.car.lastLapTime;
-              changeText(fastLapTimeDisp,[margin,yOffset*2],"" + formatTime(player.car.lastLapTime),false);
+            if(lastLapTime <= Util.toFloat(Dom.storage.fast_lap_time) && lastLapTime > 0) {
+              Dom.storage.fast_lap_time = lastLapTime;
+              changeText(fastLapTimeDisp,[margin,yOffset*2],"" + formatTime(lastLapTime),false);
             }
-            changeText(lastLapTimeDisp,[margin,yOffset*3],"" + formatTime(player.car.lastLapTime),false);
+            changeText(lastLapTimeDisp,[margin,yOffset*3],"" + formatTime(lastLapTime),false);
           }
           changeText(speedometerText,[0,0],Math.round(player.car.speed/100) + " mph",false,-67,10);
           changeText(curLapTimeDisp,[margin,yOffset],"" + formatTime(player.car.currentLapTime),false);
           changeText(positionDisp,[margin,0],player.place + " / " + C.numRacers,false);
+        } else {
+            hud.disable();
+            results.enable();
         }
       });
       scene.add(hud);
+
+      var light = makeStartingLight(scene);
 
       var racer = createPlayer(canvas.id, {
         //"debug": true,
@@ -205,6 +240,30 @@ var Game = {
 
       racer.play();
     });
+
+    function updateResults() {
+        var tmp = C.cars.map(function(car) {
+            if(!car.finished) return;
+            return { 
+                pNum : car.pNum,
+                name : car.isYou ? sessionStorage.getItem("username") : "Bot " + car.pNum,
+                time : sum(car.car.lapTimes)
+            }
+        });
+        tmp = tmp.filter(function(n){return (typeof n !== 'undefined')}); // remove undefined (players that haven't finished yet) elements
+        tmp.sort(function(a,b) {
+            return a.time - b.time;
+        });
+        return tmp;
+    }
+
+    function sum(array) {
+      return array.reduce(function(a, b) { return a + b });
+    }
+    function round(num,precision) {
+      precision = typeof precision !== 'undefined' ? precision : 3;
+      return parseFloat(Math.round(num * 100) / 100).toFixed(precision);
+    }
   },
 
   //---------------------------------------------------------------------------
@@ -321,7 +380,7 @@ var Render = {
   //---------------------------------------------------------------------------
 
   player: function(ctx, width, height, resolution, roadWidth, sprites, speedPercent, scale, destX, destY, steer, updown) {
-    var bounce = (1.5 * Math.random() * speedPercent * resolution) * Util.randomChoice([-1,1]);
+    var bounce = (1.1 * Math.random() * speedPercent * resolution) * Util.randomChoice([-1,1]);
     var sprite;
     updown = updown < 5 ? (updown < -11 ? 0 : 1) : 2; // custom tuned, what feels right
     var dx = player.car.dx*100;
@@ -346,6 +405,37 @@ var Render = {
   rumbleWidth:     function(projectedRoadWidth, lanes) { return projectedRoadWidth/Math.max(6,  2*lanes); },
   laneMarkerWidth: function(projectedRoadWidth, lanes) { return projectedRoadWidth/Math.max(32, 8*lanes); }
 
+}
+
+
+//=============================================================================
+// Animatron object buildling helpers
+//=============================================================================
+function makeStartingLight(scene) {
+    var colors   = [['red', '#910000'], ['yellow','#CEBA00'],['#00DB00','#005500']];
+    var width    = 0.07 * canvas.width;
+    var padding  = 0.2 * width;
+    var diameter = width - padding;
+    var height   = (diameter + padding) * colors.length;
+
+    var light = b('light').rect([canvas.width/2,canvas.height/4],[width,height])
+                          .fill('#F4D709')
+                          .stroke('black',2)
+                          .band([0,4])
+    for(var i=0;i<colors.length;i++) {
+      var inactive = b().circle([0,(diameter+padding/2)*(i-1)],diameter/2)  // Todo: switch 1 to be changable
+                        .fill(colors[i][1])
+                        .stroke('black',1)
+
+      var active   = b().circle([0,(diameter+padding/2)*(i-1)],diameter/2)  // Todo: switch 1 to be changable
+                        .fill(colors[i][0])
+                        .stroke('black',1)
+                        .band([i+1,i+2])
+
+      light.add(inactive).add(active);
+    }
+    scene.add(light)
+    return light;
 }
 
 //=============================================================================
@@ -436,8 +526,9 @@ function render(ctx) {
   for(n = (C.drawDistance-1) ; n > 0 ; n--) {
     segment = C.segments[(baseSegment.index + n) % C.segments.length];
     var opponent;
-    for(i = 1 ; i < segment.cars.length ; i++) {
+    for(i = 0 ; i < segment.cars.length ; i++) {
       opponent    = segment.cars[i];
+      if(opponent.isYou) continue;
       sprite      = opponent.sprite;
       spriteScale = Util.interpolate(segment.p1.screen.scale, segment.p2.screen.scale, opponent.car.percent);
       spriteX     = Util.interpolate(segment.p1.screen.x,     segment.p2.screen.x,     opponent.car.percent) + (spriteScale * opponent.car.x * C.roadWidth * width/2);

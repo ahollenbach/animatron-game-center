@@ -21,7 +21,7 @@ common = {
   keyRight       : false,
   keyFaster      : false,
   keySlower      : false,
-  raceActive     : true,
+  raceActive     : false,
   lanes          : 3,                        // number of lanes
 }
 common.step         = 1/common.fps;                     // how long is each frame (in seconds)
@@ -42,7 +42,7 @@ common.carDefault = {
   dx               : 0,                     // current horizontal velocity
   speed            : 0,                     // current speed
   currentLapTime   : 0,                     // current lap time
-  lastLapTime      : null,                  // last lap time
+  lapTimes         : [],                    // last lap time
   lap              : 1,                     // current lap
   percent          : 0,                     // useful for interpolation during rendering phase
 }

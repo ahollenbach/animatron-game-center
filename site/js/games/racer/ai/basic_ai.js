@@ -3,16 +3,17 @@ define(['games/racer/util','games/racer/common','games/racer/racer.core'], funct
 
 var basicAI = (function() {
     var ai = function() {
-        this.maxSpeed = Math.random()*C.maxSpeed*0.7 + 0.95*C.maxSpeed;
+        this.maxSpeed = Math.random()*C.maxSpeed*0.07 + 0.95*C.maxSpeed;
         this.accel    = this.maxSpeed/10 + Math.random()*this.maxSpeed/5;
         this.car = jQuery.extend(true, {}, C.carDefault);
         this.car.speed = 0;
         this.sprite = Util.randomChoice(C.SPRITES.CARS);
+        this.finished = false;
 
         this.setPlayerNum = function(playerNum) {
             this.pNum  = playerNum;
             this.car.x = (playerNum%C.lanes - 1)*2/3; // Lines players up at -2/3, 0, 2/3
-            this.car.z = (C.trackLength-Math.floor(playerNum/C.lanes)*C.segmentLength*2)%C.trackLength;
+            this.car.z = (C.trackLength-Math.floor(playerNum/C.lanes)*C.segmentLength*5)%C.trackLength;
             segment = racer.findSegment(this.car.z);
             segment.cars.push(this);
         }
@@ -27,18 +28,24 @@ var basicAI = (function() {
             this.car.x       = this.car.x + this.steer(oldSegment);
             this.car.percent = Util.percentRemaining(this.car.z, C.segmentLength); // useful for interpolation during rendering phase
             newSegment       = racer.findSegment(this.car.z);
-            if(this.car.z < this.car._z && this.car.currentLapTime > 10) {   // basically, a hack to avoid new lap at the beginning of the race
-                this.car.lap++;
-                this.car.currentLapTime = 0;
-            }
 
-            newSegment  = racer.findSegment(this.car.z);
             if (oldSegment != newSegment) {
               var index = oldSegment.cars.indexOf(this);
               oldSegment.cars.splice(index, 1);
               newSegment.cars.push(this);
             }
 
+
+            if(this.car.lap > C.numLaps) {
+                this.finished = true;
+                return;
+            }
+            // Analytical based things (stop tracking everything once finished)
+            if(this.car.z < this.car._z && this.car.currentLapTime > 10) {   // basically, a hack to avoid new lap at the beginning of the race
+                this.car.lap++;
+                this.car.lapTimes.push(this.car.currentLapTime);
+                this.car.currentLapTime = 0;
+            }
             this.car.currentLapTime += dt;
         },
         steer : function(carSegment) {
