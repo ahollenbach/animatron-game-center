@@ -251,7 +251,7 @@ define(['libs/hardcore'], function (Animatron) {
 		}
 		if (scored) {
 			state.scored = getPuckData();
-			console.log(state.scored)
+			console.log(state.scored);
 			scored = false;
 		}
 		socketConnection.emit("state", playerId, state);

@@ -86,9 +86,10 @@ var GameSession = (function() {
     var nextID = 0;
 
     // Constructor
-    var c = function(type, players) {
+    var c = function(type, players, host) {
         this.type = type;
         this.players = players;
+        this.host = host;
         this.game = null;
 
         this.id = nextID++;
@@ -124,7 +125,7 @@ var GameSessionList = (function() {
         this.size = function() { return numberOfGames; };
 
         this.addGameSession = function(type, players) {
-            var session = new GameSession(type, players);
+            var session = new GameSession(type, players, players[0]);
             gameSessions[session.id] = session;
 
             return session.id;
@@ -154,6 +155,10 @@ var GameSessionList = (function() {
 
         this.getPlayers = function(id) {
             return gameSessions[id].players;
+        };
+
+        this.getClients = function(id) {
+            return gameSessions[i].players.splice(1);
         };
 
         this.getType = function(id) {
@@ -396,9 +401,17 @@ game.on('connection', function(socket) {
 
             if (gameSessions.getConfirmationStatus(id)) {
                 // Will change to be dynamic, for now, just Pong
-                var game = new Pong(gameSessions.getPlayers(id), id);
-                gameSessions.setGame(id, game);
-                game.init();
+                // var game = new Pong(gameSessions.getPlayers(id), id);
+                var gameInfo = {
+                    id : id,
+                    host : game.socket(onlineUsers.getId(gameSessions.getHost(id))),
+                    client : game.socket(onlineUsers.getId(gameSessions.getClients(id)[0]))
+                };
+
+                var PongCore = require('pong').PongCore;
+                var p = new PongCore(gameInfo);
+
+                gameSessions.setGame(id, p);
             }
         });
     });
