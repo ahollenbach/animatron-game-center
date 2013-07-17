@@ -215,6 +215,8 @@ define(['libs/hardcore'], function (Animatron) {
 	}
 
 	var puckMovementMod = function(t) {
+
+		if(t<3) console.log(this)
 		if(t-tLastPoint > 1) {  // Only move if more than a second after last score
 			var dt = t-this._._appliedAt;
 			puck.x += puck.vx * dt;
@@ -239,7 +241,6 @@ define(['libs/hardcore'], function (Animatron) {
 	}
 
 	var stateMod = function(t) {
-		//console.log(player1, player2)
 		var state = {
 			// id      : playerId,
 			pos     : (playerId == 0) ? player1.v.state.y : player2.v.state.y
@@ -362,7 +363,7 @@ define(['libs/hardcore'], function (Animatron) {
 	// Socket.io stuff, which will only be initialized if we're networked
 	var io;
 	var socketConnection;
-	pong.initGame = function(mode,aiName,duration) {
+	pong.initGame = function(mode,duration,aiName) {
 		canvas = document.getElementById('game-canvas');
 		canvas.width = 600;
 		canvas.height = 450;

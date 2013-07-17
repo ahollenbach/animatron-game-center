@@ -76,6 +76,7 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
 
                 that.toggleDropdown();
                 that.configureSockets(username);
+                sessionStorage.setItem("username", username)
             });
         },
         checkForEnter : function(evt) {

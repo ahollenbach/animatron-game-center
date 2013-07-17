@@ -6,6 +6,10 @@ var mongoose = require('mongoose');
 // Connect to database
 mongoose.connect('mongodb://192.168.40.73:27017/gamecenter');
 
+mongoose.connection.on('error', function (err) {
+    console.log(err);
+});
+
 // Define schemas
 var Game = new mongoose.Schema({
     name : String,
@@ -291,6 +295,12 @@ app.put('/api/users/:id', function(request, response) {
 });
 
 // TODO: Add a login entry point via RESTful API
+
+// On crash, properly close
+app.on('uncaughtException', function (ex) {
+    mongoose.disconnect();
+    app.close();
+});
 
 //=============================================================================
 // Socket.io Implementation
