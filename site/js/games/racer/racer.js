@@ -1,5 +1,5 @@
 define(['libs/hardcore','games/racer/racer.core','games/racer/util','games/racer/common','games/racer/humanPlayer'], function (Animatron, Core, Util, C, humanModule) {
-const SENTINEL        = Math.pow(2,32) - 1; 
+const SENTINEL        = Math.pow(2,32) - 1;
 //=========================================================================
 // minimalist DOM helpers
 //=========================================================================
@@ -9,13 +9,12 @@ var Dom = {
   on:   function(ele, type, fn, capture) { Dom.get(ele).addEventListener(type, fn, capture);    },
 
   storage: window.localStorage || {}
-}
+};
 
 //=============================================================================
 // Game variables
 //=============================================================================
 var canvas         = Dom.get('game-canvas');
-var ctx            = canvas.getContext('2d');
 var width          = window.innerWidth;       // logical canvas width
 var height         = window.innerHeight;      // logical canvas height
 var s              = null;                    // state of the game
@@ -44,7 +43,7 @@ var b              = Builder._$;
 // GAME LOOP helpers
 //=========================================================================
 
-var Game = {  
+var Game = {
   run: function() {
     canvas.width  = width;
     canvas.height = height;
@@ -57,8 +56,6 @@ var Game = {
 
       var update = Core.update,    // method to update game logic is provided by caller
           step   = C.step,         // fixed frame step (1/fps)
-          now    = null,
-          last   = Util.timestamp(),
           dt     = 0,
           gdt    = 0,
           curLap = 1;
@@ -70,7 +67,7 @@ var Game = {
 
       var humanPlayer = new humanModule();
       humanPlayer.setPlayerNum(0);
-      C.cars.push(humanPlayer)
+      C.cars.push(humanPlayer);
       player = C.cars[0];
 
       var aiName = 'basic_ai';
@@ -118,7 +115,7 @@ var Game = {
             case KEY.DOWN: case KEY.S: C.keySlower = false; break;
             case KEY.RIGHT:case KEY.D: C.keyRight  = false; break;
           }
-      })
+      });
       var hudWidth = Math.max(200,canvas.width*.16);
       var hudHeight = 200;
       var labelHeight = 15;
@@ -126,8 +123,8 @@ var Game = {
       var margin = 4;
       var yOffset = valueHeight+labelHeight+ margin;
       var font = "Century Gothic";
-      
-      var positionDisp    = b('position');                    
+
+      var positionDisp    = b('position');
       var lapCounter      = b('lapCounter');
       var curLapTimeDisp  = b('currentLapTime');
       var fastLapTimeDisp = b('fastLapTime');
@@ -137,12 +134,12 @@ var Game = {
       var speedometer     = b('speedometer')
                               .rect([0,0],[2,hudWidth/2])
                               .reg([0,hudWidth/4])
-                              .modify(function(t) {
+                              .modify(function() {
                                 this.angle = Util.toRadians(13/12*player.car.speed/100 - 105); // scale
-                              })
+                              });
 
       var speedometerFull = b().circle([0,canvas.height-hudHeight/2-hudWidth/2-20],hudWidth/2)
-                               .fill("rgba(0,0,0,.9)")                         
+                               .fill("rgba(0,0,0,.9)");
       for(var a=-105;a<=25;a+=10) {
         speedometerFull.add(b().rect([0,0],[2,10])
                                .reg([0,hudWidth/2-5])
@@ -160,27 +157,27 @@ var Game = {
                         .add(genElem(curLapTimeDisp  , [ margin, yOffset      ], "00:00.00"           , "Current Lap"   ))
                         .add(genElem(fastLapTimeDisp , [ margin, yOffset*2    ], "- -:- -.- -"        , "Fastest Lap"   ))
                         .add(genElem(lastLapTimeDisp , [ margin, yOffset*3    ], "00:00.00"           , "Last Lap"      ))
-                        .add(speedometerFull)
+                        .add(speedometerFull);
 
       var resultWidth = canvas.width*.5, resultHeight = canvas.height*.5;
       var resultTextHeight = resultHeight/(C.numRacers+4);
       var results = b('results').rect([0,0],[resultWidth,resultHeight])
                                 .fill('rgba(0, 0, 0, 0.7)')
                                 .move([resultWidth/2,resultHeight/2])
-                                .reg([-resultWidth/2,-resultHeight/2])
+                                .reg([-resultWidth/2,-resultHeight/2]);
       results.add(makeResult(b('results-header'), 0, "NAME", "TIME",resultTextHeight));
       for(var i=0;i<C.numRacers;i++) {
           results.add(makeResult(b(), i+1, "", "",resultTextHeight));
       }
       results.disable();
-      results.modify(function(t) {
+      results.modify(function() {
           var positions = updateResults();
           for(var i=0;i<positions.length;i++) {
               var p = positions[i];
               makeResult(b(results.v.children[i+1]), i+1, p.name, round(p.time),resultTextHeight,p.pNum == 0);
           }
       });
-      scene.add(results)
+      scene.add(results);
 
       function genElem(elem, pos, val, labelVal, offX, offY) {
         return b().add(changeText(null,pos,labelVal, true, offX, offY))
@@ -193,7 +190,7 @@ var Game = {
         elem = !elem ? b() : elem;
 
         var color = label?'#DDDDDD':'#EFEFEF';
-        var pos   = label?pos: [ pos[0] + labelHeight, pos[1] + labelHeight ];
+        pos   = label?pos: [ pos[0] + labelHeight, pos[1] + labelHeight ];
         return elem.text(pos,val,label?labelHeight:valueHeight,font).move([offX,offY]).fill(color);
       }
 
@@ -204,8 +201,8 @@ var Game = {
             // ignore all the blech. It's a temporary solution until animatron supports text formatting.
             return elem.text([margin + (!isTitle?44:0), margin + height*1.2*place],(isTitle ? "PLACE" : place) + "         " + (!isTitle?"     ":"") + name + time,height,font + (isTitle||you?" bold":"")).move([-resultWidth/2, -resultHeight/2]).fill('#EFEFEF');
       }
-                 
-      hud.modify(function(t) {
+
+      hud.modify(function() {
         if (!player.finished) {   // If you haven't finished yet
           if (player.car.lap > curLap) {
             curLap = player.car.lap;
@@ -233,9 +230,9 @@ var Game = {
         //"debug": true,
         "mode" : anm.C.M_DYNAMIC,
         "anim" : {
-          "fps": 60, 
+          "fps": 60,
           "bgcolor" : { color : "#72D7EE" }
-        } 
+        }
       }).load(scene);
 
       racer.play();
@@ -244,13 +241,13 @@ var Game = {
     function updateResults() {
         var tmp = C.cars.map(function(car) {
             if(!car.finished) return;
-            return { 
+            return {
                 pNum : car.pNum,
                 name : car.isYou ? sessionStorage.getItem("username") : "Bot " + car.pNum,
                 time : sum(car.car.lapTimes)
             }
         });
-        tmp = tmp.filter(function(n){return (typeof n !== 'undefined')}); // remove undefined (players that haven't finished yet) elements
+        tmp = tmp.filter(function(n){return ( typeof n !== 'undefined' )}); // remove undefined (players that haven't finished yet) elements
         tmp.sort(function(a,b) {
             return a.time - b.time;
         });
@@ -272,7 +269,7 @@ var Game = {
     var result = [];
     var count  = names.length;
 
-    var onload = function() {
+    var onLoad = function() {
       if (--count == 0)
         callback(result);
     };
@@ -280,7 +277,7 @@ var Game = {
     for(var n = 0 ; n < names.length ; n++) {
       var name = names[n];
       result[n] = document.createElement('img');
-      Dom.on(result[n], 'load', onload);
+      Dom.on(result[n], 'load', onLoad);
       result[n].src = "js/games/racer/images/" + name + ".png";
     }
   }
@@ -316,14 +313,14 @@ var Render = {
         l1 = Render.laneMarkerWidth(w1, lanes),
         l2 = Render.laneMarkerWidth(w2, lanes),
         lanew1, lanew2, lanex1, lanex2, lane;
-    
+
     ctx.fillStyle = color.grass;
     ctx.fillRect(0, y2, width, y1 - y2);
-    
+
     Render.polygon(ctx, x1-w1-r1, y1, x1-w1, y1, x2-w2, y2, x2-w2-r2, y2, color.rumble);
     Render.polygon(ctx, x1+w1+r1, y1, x1+w1, y1, x2+w2, y2, x2+w2+r2, y2, color.rumble);
     Render.polygon(ctx, x1-w1,    y1, x1+w1, y1, x2+w2, y2, x2-w2,    y2, color.road);
-    
+
     if (color.lane) {
       lanew1 = w1*2/lanes;
       lanew2 = w2*2/lanes;
@@ -332,7 +329,7 @@ var Render = {
       for(lane = 1 ; lane < lanes ; lanex1 += lanew1, lanex2 += lanew2, lane++)
         Render.polygon(ctx, lanex1 - l1/2, y1, lanex1 + l1/2, y1, lanex2 + l2/2, y2, lanex2 - l2/2, y2, color.lane);
     }
-    
+
     Render.fog(ctx, 0, y1, width, y2-y1, fog);
   },
 
@@ -347,10 +344,10 @@ var Render = {
     var imageH = layer.h;
 
     var sourceX = layer.x + Math.floor(layer.w * rotation);
-    var sourceY = layer.y
+    var sourceY = layer.y;
     var sourceW = Math.min(imageW, layer.x+layer.w-sourceX);
     var sourceH = imageH;
-    
+
     var destX = 0;
     var destY = offset;
     var destW = Math.floor(width * (sourceW/imageW));
@@ -363,7 +360,7 @@ var Render = {
 
   //---------------------------------------------------------------------------
 
-  sprite: function(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY, offsetX, offsetY, clipY,isCar) {
+  sprite: function(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY, offsetX, offsetY, clipY) {
     var spriteScale = C.SPRITES.SCALE;
     var destW  = (sprite.w * scale * width/2) * (spriteScale * roadWidth);
     var destH  = (sprite.h * scale * width/2) * (spriteScale * roadWidth);
@@ -388,14 +385,14 @@ var Render = {
     if (lrOrient < .1) lrOrient = 0;
     else               lrOrient = Util.clamp(0,Math.ceil(lrOrient),2) * Util.getSign(dx);
     sprite = C.SPRITES.CAR_ORIENT[updown][lrOrient+3];
-    Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY + bounce, -0.5, -1,null,true);
+    Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY + bounce, -0.5, -1,null);
   },
 
   //---------------------------------------------------------------------------
 
   fog: function(ctx, x, y, width, height, fog) {
     if (fog < 1) {
-      ctx.globalAlpha = (1-fog)
+      ctx.globalAlpha = (1-fog);
       ctx.fillStyle = C.COLORS.FOG;
       ctx.fillRect(x, y, width, height);
       ctx.globalAlpha = 1;
@@ -405,11 +402,11 @@ var Render = {
   rumbleWidth:     function(projectedRoadWidth, lanes) { return projectedRoadWidth/Math.max(6,  2*lanes); },
   laneMarkerWidth: function(projectedRoadWidth, lanes) { return projectedRoadWidth/Math.max(32, 8*lanes); }
 
-}
+};
 
 
 //=============================================================================
-// Animatron object buildling helpers
+// Animatron object building helpers
 //=============================================================================
 function makeStartingLight(scene) {
     var colors   = [['red', '#910000'], ['yellow','#CEBA00'],['#00DB00','#005500']];
@@ -421,20 +418,20 @@ function makeStartingLight(scene) {
     var light = b('light').rect([canvas.width/2,canvas.height/4],[width,height])
                           .fill('#F4D709')
                           .stroke('black',2)
-                          .band([0,4])
+                          .band([0,4]);
     for(var i=0;i<colors.length;i++) {
       var inactive = b().circle([0,(diameter+padding/2)*(i-1)],diameter/2)  // Todo: switch 1 to be changable
                         .fill(colors[i][1])
-                        .stroke('black',1)
+                        .stroke('black',1);
 
       var active   = b().circle([0,(diameter+padding/2)*(i-1)],diameter/2)  // Todo: switch 1 to be changable
                         .fill(colors[i][0])
                         .stroke('black',1)
-                        .band([i+1,i+2])
+                        .band([i+1,i+2]);
 
       light.add(inactive).add(active);
     }
-    scene.add(light)
+    scene.add(light);
     return light;
 }
 
@@ -443,14 +440,15 @@ function makeStartingLight(scene) {
 //=============================================================================
 
 var KEY = {
-  LEFT:  37,
-  UP:    38,
-  RIGHT: 39,
-  DOWN:  40,
-  A:     65,
-  D:     68,
-  S:     83,
-  W:     87
+   LEFT : 37,
+     UP : 38,
+  RIGHT : 39,
+   DOWN : 40,
+      A : 65,
+      D : 68,
+      S : 83,
+      W : 87,
+  SPACE : 32
 };
 
 //-------------------------------------------------------------------------
@@ -490,7 +488,7 @@ function render(ctx) {
   Render.background(ctx, background, width, height, C.BACKGROUND.HILLS, hillOffset, resolution * hillSpeed * playerY);
   Render.background(ctx, background, width, height, C.BACKGROUND.TREES, treeOffset, resolution * treeSpeed * playerY);
 
-  var n, i, segment, car, sprite, spriteScale, spriteX, spriteY;
+  var n, i, segment, sprite, spriteScale, spriteX, spriteY;
 
   for(n = 0 ; n < C.drawDistance ; n++) {
     segment        = C.segments[(baseSegment.index + n) % C.segments.length];
@@ -533,7 +531,7 @@ function render(ctx) {
       spriteScale = Util.interpolate(segment.p1.screen.scale, segment.p2.screen.scale, opponent.car.percent);
       spriteX     = Util.interpolate(segment.p1.screen.x,     segment.p2.screen.x,     opponent.car.percent) + (spriteScale * opponent.car.x * C.roadWidth * width/2);
       spriteY     = Util.interpolate(segment.p1.screen.y,     segment.p2.screen.y,     opponent.car.percent);
-      Render.sprite(ctx, width, height, resolution, C.roadWidth, sprites, opponent.sprite, spriteScale, spriteX, spriteY, -0.5, -1, segment.clip, true);
+      Render.sprite(ctx, width, height, resolution, C.roadWidth, sprites, opponent.sprite, spriteScale, spriteX, spriteY, -0.5, -1, segment.clip);
     }
 
     for(i = 0 ; i < segment.sprites.length ; i++) {

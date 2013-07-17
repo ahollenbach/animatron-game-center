@@ -17,7 +17,7 @@ var humanPlayer = (function() {
             this.pNum  = playerNum;
             this.car.x = (playerNum%C.lanes - 1)*2/3; // Lines players up at -2/3, 0, 2/3
             this.car.z = (C.trackLength-Math.floor(playerNum/C.lanes)*C.segmentLength*5)%C.trackLength;
-            segment = racer.findSegment(this.car.z);
+            var segment = racer.findSegment(this.car.z);
             segment.cars.push(this);
         }
     };

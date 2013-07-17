@@ -32,9 +32,9 @@ racer.findSegment = function (z) {
 
 // Takes the index of the car you are trying to get the place of (0 for you)
 racer.getPlace = function(index) {
-  var you = C.cars[index].car;
+  var you = C.cars[index].car, opponent;
   var place = 1;
-  for(n = 0 ; n < C.cars.length ; n++) {
+  for(var n = 0 ; n < C.cars.length ; n++) {
     if(n == index) continue;
     opponent = C.cars[n].car;
     if(opponent.lap > you.lap || (opponent.lap == you.lap && opponent.z > you.z)) place++;
