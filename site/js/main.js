@@ -7,12 +7,15 @@ require.config({
         handlebars : 'libs/handlebars',
         socketio   : 'libs/socket.io.min',
         moment     : 'libs/moment.min',
-        jqueryui   : 'libs/jquery-ui'    },
+        jqueryui   : 'libs/jquery-ui',
+        animatron  : 'libs/builder',
+        // hardcore   : 'libs/hardcore' 
+    }, 
     shim: {
-        underscore: {
+        underscore : {
             exports : '_'
         },
-        backbone: {
+        backbone : {
             deps    : ["underscore", "jquery"],
             exports : "Backbone"
         }, 
@@ -21,6 +24,13 @@ require.config({
         },
         socketio : {
             exports : "io"
+        },
+        animatron : {
+            deps    : ["libs/matrix", "libs/player", "libs/collisions"],
+            exports : "Animatron"  
+        },
+        hardcore : {
+            exports : "Animatron"
         }
     }
 });

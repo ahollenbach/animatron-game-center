@@ -10,7 +10,7 @@ mongoose.connect('mongodb://192.168.40.73:27017/gamecenter');
 var Game = new mongoose.Schema({
     name : String,
     developers : String,
-    created : Date, 
+    created : Date,
     singlePlayer : Boolean,
     multiPlayer : Boolean
 }, { collection : "games" });
@@ -73,13 +73,13 @@ var UserList = (function() {
             return list;
         };
     };
-    
+
     return c;
 })();
 
 // TODO: Modularize this code
 //=============================================================================
-// Game Session List Module 
+// Game Session List Module
 // Temporary location - will be modularized later
 //=============================================================================
 var GameSession = (function() {
@@ -110,7 +110,7 @@ var GameSession = (function() {
     };
 
     c.prototype = {
-        
+
     };
 
     return c;
@@ -157,8 +157,12 @@ var GameSessionList = (function() {
             return gameSessions[id].players;
         };
 
+        this.getHost = function(id) {
+            return gameSessions[id].host;
+        };
+
         this.getClients = function(id) {
-            return gameSessions[i].players.splice(1);
+            return gameSessions[id].players.splice(1);
         };
 
         this.getType = function(id) {
@@ -175,7 +179,7 @@ var GameSessionList = (function() {
     };
 
     c.prototype = {
-        
+
     };
 
     return c;
@@ -247,13 +251,13 @@ app.post('/api/users', function(request, response) {
         UserModel.findOne({ username : request.body.username }, function(error, user) {
             if (error) {
                 console.log(error);
-                return response.send('500', { 
+                return response.send('500', {
                     error : "The server was not able to query database for " +
                         request.body.username
                 });
             } else if (user) {
                 return response.send('400', {
-                    error : "Someone has already taken the username " + 
+                    error : "Someone has already taken the username " +
                         request.body.username
                 });
             } else {
@@ -270,7 +274,7 @@ app.post('/api/users', function(request, response) {
             }
         });
     } else {
-        return response.send('400', { 
+        return response.send('400', {
             error : "The username \"" +
                 request.body.username + "\" is invalid.\nUsernames can only consist of alphanumeric characters, underscores, hyphens, and spaces."
         });
@@ -285,7 +289,7 @@ app.put('/api/users/:id', function(request, response) {
 
         return user.save(function(error) {
             if (!error)
-                console.log(request.body.username + " is " + 
+                console.log(request.body.username + " is " +
                     (request.body.inGame ? "" : " not ") + " in game.");
             else
                 console.log(error);
@@ -314,7 +318,7 @@ io.on('connection', function(socket) {
             if (!error) {
                 onlineUsers.remove(username);
                 console.log(username + " has disconnected");
-                
+
                 io.of("/chat").emit("user_disconnected", username);
             } else {
                 console.log("There was an error with finding the username of " +
@@ -336,7 +340,7 @@ chat.on('connection', function(socket) {
         socket.set("username", username, function() {
             socket.emit('user_connected', username);
             socket.broadcast.emit('user_connected', username);
-        });      
+        });
     });
 
     socket.on('message', function(message) {
@@ -369,11 +373,11 @@ invite.on('connection', function(socket) {
     });
 
     socket.on('decline', function(inviter, gameName) {
-        // TODO: Allow user to invite another user 
+        // TODO: Allow user to invite another user
         socket.get("username", function(error, invitee) {
             var id = onlineUsers.getId(inviter);
             invite.socket(id).emit('declined', invitee, gameName);
-        });   
+        });
     });
 });
 
@@ -408,7 +412,7 @@ game.on('connection', function(socket) {
                     client : game.socket(onlineUsers.getId(gameSessions.getClients(id)[0]))
                 };
 
-                var PongCore = require('pong').PongCore;
+                var PongCore = require('pong/pong_core');
                 var p = new PongCore(gameInfo);
 
                 gameSessions.setGame(id, p);
