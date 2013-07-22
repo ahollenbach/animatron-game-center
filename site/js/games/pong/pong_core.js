@@ -374,6 +374,7 @@ var PongCore = (function() {
 		};
 
 		this.startGame = function() {
+			console.log("^^^^ started the game");
 			scene.modify(this.update);
 		};
 
