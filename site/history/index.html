@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Animatron Games - Revision History</title>
+    <meta charset="utf-8">
+
+    <style>
+	.update {
+		padding:.5em;
+	}
+	body {
+		font-family: sans-serif;
+	}
+	.time {
+		font-size: .8em;
+		color: #999;
+	}
+	.message {
+		font-size: 1.1em
+	}
+    </style>
+</head>
+
+<body>
+<div id="messages"></div>
+
+<script>
+// All is makeshift until I get communication with Github API up and running
+// http://www.epochconverter.com/
+var updates = [
+    {
+        message: 'Bugfixes and UX fixes',
+        time   : '7/23/2013 3:40:56 PM GMT-4'
+    }
+];
+
+var html = "";
+for(var i=0;i<updates.length;i++) {
+    html += "<div class='update'>"
+    			+"<div class='time'>" + updates[i].time + "</div>"
+    			+"<div class='message'>" + updates[i].message + "</div></div>\n" 
+}
+document.getElementById('messages').innerHTML = html;
+
+</script>
+</body>
+</html>
