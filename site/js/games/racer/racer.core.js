@@ -3,7 +3,6 @@ define(['games/racer/util','games/racer/common'], function (Util,C) {
 var racer = {}
 
 var centrifugal    = .3;                      // centrifugal force multiplier when going around curves
-
 var totalCars      = 0;                         // total number of cars on the road
 
 //=========================================================================
@@ -18,11 +17,14 @@ racer.update = function(dt) {
 
 function updateCars(dt) {
   var n, car, carsFinished = 0;
+  //var carLaps = [];
   for(n = 0 ; n < C.cars.length ; n++) {
     car = C.cars[n];
     car.move(dt);
     if(car.finished) carsFinished++;
+    //carLaps.push(car.lap);
   }
+  //console.log(carLaps);
   if(carsFinished == C.numRacers) C.raceActive = false;
 }
 
@@ -31,13 +33,14 @@ racer.findSegment = function (z) {
 }
 
 // Takes the index of the car you are trying to get the place of (0 for you)
+// Should only be used singly (don't call this in a loop for all players, because that's dumb.
 racer.getPlace = function(index) {
-  var you = C.cars[index].car, opponent;
+  var you = C.cars[index], opponent;
   var place = 1;
   for(var n = 0 ; n < C.cars.length ; n++) {
     if(n == index) continue;
-    opponent = C.cars[n].car;
-    if(opponent.lap > you.lap || (opponent.lap == you.lap && opponent.z > you.z)) place++;
+    opponent = C.cars[n];
+    if(opponent.lap > you.lap || (opponent.lap == you.lap && opponent.car.z > you.car.z)) place++;
   }
   return place;
 }
@@ -61,9 +64,10 @@ function addSegment(curve, y) {
   });
 }
 
-function addSprite(n, sprite, offset) {
-  C.segments[n].sprites.push({ source: sprite, offset: offset });
-}
+racer.addSprite = function(n, sprite, offset,collidable) {
+    collidable = collidable || true;
+    C.segments[n].sprites.push({ source: sprite, x: offset, collidable: collidable });
+};
 
 function addRoad(enter, hold, leave, curve, y) {
   var startY   = lastY();
@@ -159,7 +163,6 @@ function resetRoad() {
   addDownhillToEnd();
 
   resetSprites();
-  resetAmbientCars();
 
   //TODO: make a better finish line
   for(var n = 0 ; n < C.rumbleLength*3 ; n++) {
@@ -174,60 +177,39 @@ function resetSprites() {
   var n, i;
 
   for(n=20;n<=180;n+=40) {
-    addSprite(n,  C.SPRITES.BILLBOARD, -1.4);
+    racer.addSprite(n,  C.SPRITES.BILLBOARD, -1.4);
   }
 
-  addSprite(240,                    C.SPRITES.BILLBOARD, -1.4);
-  addSprite(240,                    C.SPRITES.BILLBOARD,  1.4);
-  addSprite(C.segments.length - 25, C.SPRITES.BILLBOARD, -1.4);
-  addSprite(C.segments.length - 25, C.SPRITES.BILLBOARD,  1.4);
+    racer.addSprite(240,                    C.SPRITES.BILLBOARD, -1.4);
+    racer.addSprite(240,                    C.SPRITES.BILLBOARD,  1.4);
+    racer.addSprite(C.segments.length - 25, C.SPRITES.BILLBOARD, -1.4);
+    racer.addSprite(C.segments.length - 25, C.SPRITES.BILLBOARD,  1.4);
 
   for(n = 10 ; n < 200 ; n += 4 + Math.floor(n/100)) {
-    addSprite(n, C.SPRITES.PALM_TREE, .9 + Math.random()*0.5);
-    addSprite(n, C.SPRITES.PALM_TREE,   1.1 + Math.random()*2);
+    racer.addSprite(n, C.SPRITES.PALM_TREE, .9 + Math.random()*0.5);
+    racer.addSprite(n, C.SPRITES.PALM_TREE,   1.1 + Math.random()*2);
   }
 
   for(n = 250 ; n < 1000 ; n += 5) {
-    addSprite(n,     C.SPRITES.COLUMN, 1.2);
-    addSprite(n + Util.randomInt(0,5), C.SPRITES.TREE1, -1.2 - (Math.random() * 2));
-    addSprite(n + Util.randomInt(0,5), C.SPRITES.TREE2, -1.2 - (Math.random() * 2));
+    racer.addSprite(n,     C.SPRITES.COLUMN, 1.2);
+    racer.addSprite(n + Util.randomInt(0,5), C.SPRITES.TREE1, -1.2 - (Math.random() * 2));
+    racer.addSprite(n + Util.randomInt(0,5), C.SPRITES.TREE2, -1.2 - (Math.random() * 2));
   }
 
   for(n = 200 ; n < C.segments.length ; n += 3) {
-    addSprite(n, Util.randomChoice(C.SPRITES.PLANTS), Util.randomChoice([1,-1]) * (2 + Math.random() * 5));
+    racer.addSprite(n, Util.randomChoice(C.SPRITES.PLANTS), Util.randomChoice([1,-1]) * (2 + Math.random() * 5));
   }
 
   var side, sprite, offset;
   for(n = 1000 ; n < (C.segments.length-50) ; n += 100) {
     side      = Util.randomChoice([1.4, -1.4]);
-    addSprite(n + Util.randomInt(0, 50), Util.randomChoice(C.SPRITES.BILLBOARDS), -side);
+    racer.addSprite(n + Util.randomInt(0, 50), Util.randomChoice(C.SPRITES.BILLBOARDS), -side);
     for(i = 0 ; i < 20 ; i++) {
       sprite = Util.randomChoice(C.SPRITES.PLANTS);
       offset = side * (1.5 + Math.random());
-      addSprite(n + Util.randomInt(0, 50), sprite, offset);
+      racer.addSprite(n + Util.randomInt(0, 50), sprite, offset);
     }
-      
   }
-
-}
-
-function resetAmbientCars() {
-  C.cars = [];
-  var n, car, segment, offset, z, sprite, speed;
-  for (var n = 0 ; n < totalCars ; n++) {
-    offset = Math.random() * Util.randomChoice([-0.8, 0.8]);
-    z      = Math.floor(Math.random() * C.segments.length) * C.segmentLength;
-    sprite = Util.randomChoice(C.SPRITES.CARS);
-    speed  = C.maxSpeed/2 + Math.random() * C.maxSpeed/(sprite == C.SPRITES.SEMI ? 4 : 2);
-    car = { offset: offset, z: z, sprite: sprite, speed: speed, lap: 1};
-    segment = racer.findSegment(car.z);
-    segment.cars.push(car);
-    C.cars.push(car);
-  }
-}
-
-function resetAI() {
-
 }
 
 //=========================================================================
@@ -239,7 +221,7 @@ racer.reset = function (options) {
 
   if ((C.segments.length==0) || (options.segmentLength) || (options.rumbleLength))
     resetRoad(); // only rebuild road when necessary
-}
+};
 
 return racer;
 });

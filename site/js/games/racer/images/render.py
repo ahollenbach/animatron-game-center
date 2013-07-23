@@ -12,7 +12,7 @@ camera = bpy.data.objects["Camera"]
 # The location z values mapped to the three tilt states, up, straight, and down
 # You can use this to get the x-rotation displacement, by using val*-5
 tilts = { 
-          "up"  : 2,
+          "up"  : 1,
           ""    : 0,
           "down":-1
         }

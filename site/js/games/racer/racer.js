@@ -17,7 +17,6 @@ var Dom = {
 var canvas         = Dom.get('game-canvas');
 var width          = window.innerWidth;       // logical canvas width
 var height         = window.innerHeight;      // logical canvas height
-var s              = null;                    // state of the game
 var camera         = {
     fieldOfView    : 100,                     // angle (degrees) for field of view
     height         : 1000,                    // z height of camera
@@ -87,7 +86,7 @@ var Game = {
                         gdt = gdt + dt;
                         while (gdt > step) {
                           gdt = gdt - step;
-                          s = update(step);
+                          update(step);
                         }
                       } else if(t > 3 && t < 4) {   // Hack to start game (start it when t = 3)
                         C.raceActive = true;
@@ -103,17 +102,19 @@ var Game = {
 
       scene.on(anm.C.X_KDOWN, function(evt) {
           switch(evt.key) {
-            case KEY.UP:   case KEY.W: C.keyFaster = true; break;
-            case KEY.LEFT: case KEY.A: C.keyLeft   = true; break;
-            case KEY.DOWN: case KEY.S: C.keySlower = true; break;
-            case KEY.RIGHT:case KEY.D: C.keyRight  = true; break;
+            case KEY.UP:   case KEY.W: C.input.keyFaster = true; break;
+            case KEY.LEFT: case KEY.A: C.input.keyLeft   = true; break;
+            case KEY.DOWN: case KEY.S: C.input.keySlower = true; break;
+            case KEY.RIGHT:case KEY.D: C.input.keyRight  = true; break;
+            case KEY.SPACE:            C.input.keyDrift  = true; break;
           }
       }).on(anm.C.X_KUP, function(evt) {
           switch(evt.key) {
-            case KEY.UP:   case KEY.W: C.keyFaster = false; break;
-            case KEY.LEFT: case KEY.A: C.keyLeft   = false; break;
-            case KEY.DOWN: case KEY.S: C.keySlower = false; break;
-            case KEY.RIGHT:case KEY.D: C.keyRight  = false; break;
+            case KEY.UP:   case KEY.W: C.input.keyFaster = false; break;
+            case KEY.LEFT: case KEY.A: C.input.keyLeft   = false; break;
+            case KEY.DOWN: case KEY.S: C.input.keySlower = false; break;
+            case KEY.RIGHT:case KEY.D: C.input.keyRight  = false; break;
+            case KEY.SPACE:            C.input.keyDrift  = false; break;
           }
       });
       var hudWidth = Math.max(200,canvas.width*.16);
@@ -204,10 +205,10 @@ var Game = {
 
       hud.modify(function() {
         if (!player.finished) {   // If you haven't finished yet
-          if (player.car.lap > curLap) {
-            curLap = player.car.lap;
-            var lastLapTime = player.car.lapTimes[player.car.lapTimes.length-1];
-            changeText(lapCounter,[margin,0],player.car.lap + " / " + C.numLaps,false,0);
+          if (player.lap > curLap) {
+            curLap = player.lap;
+            var lastLapTime = player.lapTimes[player.lapTimes.length-1];
+            changeText(lapCounter,[margin,0],player.lap + " / " + C.numLaps,false,0);
             if(lastLapTime <= Util.toFloat(Dom.storage.fast_lap_time) && lastLapTime > 0) {
               Dom.storage.fast_lap_time = lastLapTime;
               changeText(fastLapTimeDisp,[margin,yOffset*2],"" + formatTime(lastLapTime),false);
@@ -215,7 +216,7 @@ var Game = {
             changeText(lastLapTimeDisp,[margin,yOffset*3],"" + formatTime(lastLapTime),false);
           }
           changeText(speedometerText,[0,0],Math.round(player.car.speed/100) + " mph",false,-67,10);
-          changeText(curLapTimeDisp,[margin,yOffset],"" + formatTime(player.car.currentLapTime),false);
+          changeText(curLapTimeDisp,[margin,yOffset],"" + formatTime(player.currentLapTime),false);
           changeText(positionDisp,[margin,0],player.place + " / " + C.numRacers,false);
         } else {
             hud.disable();
@@ -244,7 +245,7 @@ var Game = {
             return {
                 pNum : car.pNum,
                 name : car.isYou ? sessionStorage.getItem("username") : "Bot " + car.pNum,
-                time : sum(car.car.lapTimes)
+                time : sum(car.lapTimes)
             }
         });
         tmp = tmp.filter(function(n){return ( typeof n !== 'undefined' )}); // remove undefined (players that haven't finished yet) elements
@@ -374,17 +375,15 @@ var Render = {
 
   },
 
-  //---------------------------------------------------------------------------
+  car: function(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY, offsetX, offsetY, clipY, updown, car,distance) {
+    var bounce = ((2/distance) * Math.random() * (car.car.speed/car.car.maxSpeed) * resolution) * Util.randomChoice([-1,1]);
+    sprite = getCarSprite(car, updown);
+    Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY + bounce, offsetX, offsetY,clipY);
+  },
 
-  player: function(ctx, width, height, resolution, roadWidth, sprites, speedPercent, scale, destX, destY, steer, updown) {
-    var bounce = (1.1 * Math.random() * speedPercent * resolution) * Util.randomChoice([-1,1]);
-    var sprite;
-    updown = updown < 5 ? (updown < -11 ? 0 : 1) : 2; // custom tuned, what feels right
-    var dx = player.car.dx*100;
-    var lrOrient = Math.abs(dx-0);
-    if (lrOrient < .1) lrOrient = 0;
-    else               lrOrient = Util.clamp(0,Math.ceil(lrOrient),2) * Util.getSign(dx);
-    sprite = C.SPRITES.CAR_ORIENT[updown][lrOrient+3];
+    player: function(ctx, width, height, resolution, roadWidth, sprites, scale, destX, destY, steer, updown, car) {
+    var bounce = (1.1 * Math.random() * (car.car.speed/car.car.maxSpeed) * resolution) * Util.randomChoice([-1,1]);
+    var sprite = getCarSprite(car, updown);
     Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY + bounce, -0.5, -1,null);
   },
 
@@ -404,6 +403,38 @@ var Render = {
 
 };
 
+function getCarSprite (car, updown) {
+    var sprite;
+    if(car.car.freezeTime > 0) {
+        var time = car.car.freezeTime;
+        var step = 15;
+        sprite = time%step > 10 ? C.SPRITES.EXPLOSION0 :
+                 time%step > 5  ? C.SPRITES.EXPLOSION1 :
+                                  C.SPRITES.EXPLOSION2 ;
+    } else {
+        updown = updown < 8 ? (updown < -8 ? 0 : 1) : 2; // custom tuned, what feels right
+        var lrOrient;
+        if(car.isYou) {
+            var dx = car.car.dx*100;
+
+            if(C.input.keyDrift) {
+                lrOrient = (C.input.keyLeft ? -1 : C.input.keyRight ? 1 : 0) * 3;
+                console.log(C.input,lrOrient);
+            } else {
+                lrOrient = Math.abs(dx-0);
+                if (lrOrient < .1) lrOrient = 0;
+                else               lrOrient = Util.clamp(0,Math.ceil(lrOrient),2) * Util.getSign(dx);
+            }
+        } else {
+            var xOff = (car.car.x+1) - (player.car.x+1);
+            lrOrient = Math.abs(xOff) < .1 ?  0 :
+                       xOff > 0            ? -2 : 2;
+            //TODO: Calculate other cars' angles relative to you
+        }
+        sprite = C.SPRITES.CAR_ORIENT[updown][lrOrient+3];
+    }
+    return sprite;
+}
 
 //=============================================================================
 // Animatron object building helpers
@@ -526,29 +557,32 @@ function render(ctx) {
     var opponent;
     for(i = 0 ; i < segment.cars.length ; i++) {
       opponent    = segment.cars[i];
-      if(opponent.isYou) continue;
-      sprite      = opponent.sprite;
-      spriteScale = Util.interpolate(segment.p1.screen.scale, segment.p2.screen.scale, opponent.car.percent);
-      spriteX     = Util.interpolate(segment.p1.screen.x,     segment.p2.screen.x,     opponent.car.percent) + (spriteScale * opponent.car.x * C.roadWidth * width/2);
-      spriteY     = Util.interpolate(segment.p1.screen.y,     segment.p2.screen.y,     opponent.car.percent);
-      Render.sprite(ctx, width, height, resolution, C.roadWidth, sprites, opponent.sprite, spriteScale, spriteX, spriteY, -0.5, -1, segment.clip);
+      if(opponent.isYou) {
+          Render.player( ctx, width, height, resolution, C.roadWidth, sprites,
+                      camera.depth/camera.playerZ,
+                      width/2,
+                      (height/2) - (camera.depth/camera.playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height/2),
+                      player.car.speed * (C.input.keyLeft ? -1 : C.input.keyRight ? 1 : 0),
+                      playerSegment.p2.world.y - playerSegment.p1.world.y,player);
+      } else {
+          sprite      = opponent.sprite;
+          spriteScale = Util.interpolate(segment.p1.screen.scale, segment.p2.screen.scale, opponent.car.percent);
+          spriteX     = Util.interpolate(segment.p1.screen.x,     segment.p2.screen.x,     opponent.car.percent) + (spriteScale * opponent.car.x * C.roadWidth * width/2);
+          spriteY     = Util.interpolate(segment.p1.screen.y,     segment.p2.screen.y,     opponent.car.percent);
+          Render.car(ctx, width, height, resolution, C.roadWidth, sprites, opponent.sprite, spriteScale, spriteX, spriteY, -0.5, -1, segment.clip, segment.p2.world.y - segment.p1.world.y,opponent,n);
+      }
     }
 
     for(i = 0 ; i < segment.sprites.length ; i++) {
       sprite      = segment.sprites[i];
       spriteScale = segment.p1.screen.scale;
-      spriteX     = segment.p1.screen.x + (spriteScale * sprite.offset * C.roadWidth * width/2);
+      spriteX     = segment.p1.screen.x + (spriteScale * sprite.x * C.roadWidth * width/2);
       spriteY     = segment.p1.screen.y + (sprite.source == C.SPRITES.COLUMN ? spriteScale*60000 : 0);
-      Render.sprite(ctx, width, height, resolution, C.roadWidth, sprites, sprite.source, spriteScale, spriteX, spriteY, (sprite.offset < 0 ? -1 : 0), -1, segment.clip);
+      Render.sprite(ctx, width, height, resolution, C.roadWidth, sprites, sprite.source, spriteScale, spriteX, spriteY, (sprite.x < 0 ? -1 : 0), -1, segment.clip);
     }
 
     if (segment == playerSegment) {
-      Render.player(ctx, width, height, resolution, C.roadWidth, sprites, player.car.speed/C.maxSpeed,
-                    camera.depth/camera.playerZ,
-                    width/2,
-                    (height/2) - (camera.depth/camera.playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height/2),
-                    player.car.speed * (C.keyLeft ? -1 : C.keyRight ? 1 : 0),
-                    playerSegment.p2.world.y - playerSegment.p1.world.y);
+
     }
   }
 }

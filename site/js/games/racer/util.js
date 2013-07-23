@@ -1,7 +1,6 @@
 define([], function () {
 
 var Util = {
-
   timestamp:        function()                  { return new Date().getTime();                                    },
   toInt:            function(obj, def)          { if (obj !== null) { var x = parseInt(obj, 10); if (!isNaN(x)) return x; } return Util.toInt(def, 0); },
   toFloat:          function(obj, def)          { if (obj !== null) { var x = parseFloat(obj);   if (!isNaN(x)) return x; } return Util.toFloat(def, 0.0); },
@@ -47,7 +46,16 @@ var Util = {
   toRadians: function(degrees)   {return degrees * Math.PI / 180; },
   toDegrees: function(radians)   {return radians * 180 / Math.PI; },
   clamp    : function(min,x,max) {return Math.max(min, Math.min(x, max))},
-  getSign  : function(num)       {return num?num<0?-1:1:0}
+  getSign  : function(num)       {return num?num<0?-1:1:0},
+
+  // Inheritance stuffs conceptualized here: http://stackoverflow.com/a/1114121/1227632
+  inherit  : function(cls, superCls) {
+    var construct = function () {};
+    construct.prototype = superCls.prototype;
+    cls.prototype = new construct;
+    cls.prototype.constructor = cls;
+    cls.super = superCls;
+  }
 }
 return Util;
 });
