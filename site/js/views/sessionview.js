@@ -29,6 +29,7 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
 
             $('#session-page').css({'left':window.innerWidth})
                               .animate({'left': 0},EASE_LEN,EASING);
+            $('#game-canvas').focus();
         }
     });
 

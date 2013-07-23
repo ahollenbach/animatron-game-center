@@ -218,7 +218,7 @@ app.configure( function() {
 });
 
 //Start server
-server.listen(80);
+server.listen(1234);
 console.log("Server started");
 
 // RESTful API

@@ -21,6 +21,10 @@ require.config({
         },
         socketio : {
             exports : "io"
+        },
+        jqueryui : {
+            deps : ["jquery"],
+            exports : "jQueryUI"
         }
     }
 });
@@ -41,14 +45,12 @@ function ps() {
     globalEvents.trigger('toSessionView', 1, { name: "Pong", duration: { type: 'point', cond: 5} });
 }
 
-require(
-  ["jquery",
-    "underscore",
+require([
     "backbone",
     "handlebars",
     "views/globalview"
   ],
-  function($, _, Backbone, Handlebars, GlobalView) {
+  function(Backbone, Handlebars, GlobalView) {
      $(function() {
         _.extend(globalEvents, Backbone.Events);
 
@@ -61,6 +63,7 @@ require(
         });
 
         new GlobalView();
+        $('input[name=username]').focus();
     });
 
     // Hide some stuff when the cursor hasn't moved
@@ -68,7 +71,10 @@ require(
     $(document).ready(function() {  
         var idleTimer;
         var forceHide = false;
-        var body = $('body'), toggles = $('.toggle');
+        var body = $('body')
+        var dropdownToggle = $('#dropdownToggle.toggle'), dropdown = $('.dropdown');
+        var chatToggle = $('#chatToggle.toggle'), chat = $('#message-box');
+        var toggles = $('.toggle');
  
         body.css('cursor', 'none');
         toggles.css('visibility', 'hidden');
@@ -80,11 +86,16 @@ require(
                 clearTimeout(idleTimer); 
                 idleTimer = setTimeout(function() {
                     body.css('cursor', 'none');
-                    toggles.css('visibility', 'hidden');
+                    if(!dropdown.hasClass('fullscreen') && !dropdown.hasClass('active')) {
+                        dropdownToggle.css('visibility', 'hidden');
+                    }
+                    if(!chat.hasClass('active')) {
+                        chatToggle.css('visibility', 'hidden');
+                    }
 
                     forceHide = true;
                     setTimeout(function() { forceHide = false; }, 200);
-                }, 1000);
+                }, 2000);
             }
         });
     });
