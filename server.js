@@ -171,15 +171,19 @@ var GameSessionList = (function() {
 
         this.setGame = function(id, game) {
             gameSessions[id].game = game;
-        }
+        };
 
         this.processState = function(id, playerId, state) {
             gameSessions[id].game.updateState(playerId, state);
         };
+
+        this.toString = function() {
+            return gameSessions;
+        };
     };
 
     c.prototype = {
-
+        
     };
 
     return c;
@@ -416,6 +420,7 @@ game.on('connection', function(socket) {
                 var p = new PongCore(gameInfo);
 
                 gameSessions.setGame(id, p);
+                console.log(gameSessions.toString());
             }
         });
     });
@@ -433,24 +438,24 @@ game.on('connection', function(socket) {
 // Pong Game Module
 // Temporary location - will be modularized later
 //=============================================================================
-var Pong = (function() {
-    var c = function(p, r) {
-        var players = p;
-        var room = r;
+// var Pong = (function() {
+//     var c = function(p, r) {
+//         var players = p;
+//         var room = r;
 
-        this.init = function() {
-            players.forEach(function(player, id) {
-                game.socket(onlineUsers.getId(player)).emit('start', id);
-            });
-        }
+//         this.init = function() {
+//             players.forEach(function(player, id) {
+//                 game.socket(onlineUsers.getId(player)).emit('start', id);
+//             });
+//         }
 
-        this.updateState = function(id, state) {
-            game
-                .socket(onlineUsers.getId(players[id]))
-                .broadcast.to(room)
-                .emit('state', id, state);
-        };
-    };
+//         this.updateState = function(id, state) {
+//             game
+//                 .socket(onlineUsers.getId(players[id]))
+//                 .broadcast.to(room)
+//                 .emit('state', id, state);
+//         };
+//     };
 
-    return c;
-})();
+//     return c;
+// })();

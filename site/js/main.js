@@ -9,7 +9,7 @@ require.config({
         moment     : 'libs/moment.min',
         jqueryui   : 'libs/jquery-ui',
         animatron  : 'libs/builder',
-        // hardcore   : 'libs/hardcore' 
+        hardcore   : 'libs/hardcore' 
     }, 
     shim: {
         underscore : {
@@ -28,10 +28,10 @@ require.config({
         animatron : {
             deps    : ["libs/matrix", "libs/player", "libs/collisions"],
             exports : "Animatron"  
-        },
-        hardcore : {
-            exports : "Animatron"
         }
+        // hardcore : {
+        //     exports : "Animatron"
+        // }
     }
 });
 
