@@ -257,6 +257,8 @@ var PongCore = (function() {
 		return elem.text(pos,val + "",size,font).fill(color);
 	};
 
+	var that = this;
+
 	var c = function(gameInstance) {
 		// Private variables
 		var scene;
@@ -311,7 +313,7 @@ var PongCore = (function() {
 
 			this.mousePosition;
 
-			window.addEventListener(function(e) {
+			window.addEventListener('mousemove', function(e) {
 				if (viewport) {
 					var rect = viewport.getBoundingClientRect();
 				    this.mousePosition = {
@@ -320,8 +322,6 @@ var PongCore = (function() {
 				    };
 				}
 			});
-
-			this.clientConnectToServer();
 		}
 
 		// Public functions
@@ -421,17 +421,18 @@ var PongCore = (function() {
 		// Common Functions
 		//=============================================================================
 		update : function(t) {
-			this.t = t;
-			this.dt = t - this._._appliedAt;
-			this.gdt += this.dt;
+			if (t < 10)
+				console.log(that);
+			that.t = t;
+			that.dt = t - this._._appliedAt;
+			that.gdt += that.dt;
+			while (that.gdt >= that.step) {
+				that.gdt -= that.step;
 
-			while (this.gdt >= this.step) {
-				this.gdt -= this.step;
-
-				if (this.server)
-					this.serverUpdate();
+				if (that.server)
+					that.serverUpdate();
 				else
-					this.clientUpdate();
+					that.clientUpdate();
 			}
 		},
 		handleScore : function(player) {
@@ -441,6 +442,15 @@ var PongCore = (function() {
 				this.serverHandleScore(player);
 			else
 				this.clientHandleScore(player);
+		},
+		processInput : function(player) {
+			// Since we're getting an absolute position from the mouse,
+			// we just take the latest input and use that for the position
+			// assignment of the paddle.
+
+			var lastIndex = player.inputs.length - 1;
+
+			return player.inputs[lastIndex];
 		},
 		// updatePhysics : function(t) {
 		// 	this.dt = t - this._._appliedAt;
@@ -567,6 +577,7 @@ var PongCore = (function() {
 			// this.socket.emit()
 		},
 		clientConnectToServer : function() {
+			console.log("Connecting to server");
 			// Make connection to server
 			this.socket = io.connect(window.location.origin + "/game");
 
