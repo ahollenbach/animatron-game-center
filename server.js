@@ -4,7 +4,7 @@
 var mongoose = require('mongoose');
 
 // Connect to database
-mongoose.connect('mongodb://192.168.40.73:27017/gamecenter');
+mongoose.connect('mongodb://78.46.229.104:27017/gamecenter');
 
 mongoose.connection.on('error', function (err) {
     console.log(err);
