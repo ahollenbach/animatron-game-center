@@ -1,4 +1,12 @@
 //=============================================================================
+// Logging code
+//=============================================================================
+var log4js = require('log4js');
+log4js.replaceConsole()
+var log = log4js.getLogger('gamecenter');
+
+
+//=============================================================================
 // General Node Code
 //=============================================================================
 process.on('SIGINT', function() {
@@ -6,7 +14,7 @@ process.on('SIGINT', function() {
 });
 
 process.on('exit', function() {
-    console.log('Gamecenter server is shutting down.');
+    log.info('Gamecenter server is shutting down.\n');
 });
 
 //=============================================================================
@@ -15,10 +23,10 @@ process.on('exit', function() {
 var mongoose = require('mongoose');
 
 // Connect to database
-mongoose.connect('mongodb://78.46.229.104:27017/gamecenter');
+mongoose.connect('mongodb://gamez.animatron.com:27017/gamecenter');
 
 mongoose.connection.on('error', function (err) {
-    console.log(err);
+    log.error(err);
 });
 
 // Define schemas
