@@ -67,9 +67,10 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
             $.post('/api/users', {
                 username : username
             }, function(data, textStatus, jqXHR) {
+                /*
                 console.dir(data);
                 console.log(textStatus);
-                console.dir(jqXHR);
+                console.dir(jqXHR);*/
 
                 that.username = username;
                 globalEvents.trigger("usernameSet", username);
@@ -100,11 +101,11 @@ function (Backbone, Handlebars, io, moment, JQueryUI, GalleryView, UserListView,
         },
         setGame : function(evt) {
         },
-        launchGame : function(modelJSON, otherPlayers) {
+        launchGame : function(gameInfo, otherPlayers) {
             if (otherPlayers.length != 0)
-                this.game.emit('initiate', modelJSON, otherPlayers);
+                this.game.emit('initiate', gameInfo, otherPlayers);
             else
-                globalEvents.trigger('toSessionView', 1, modelJSON);
+                globalEvents.trigger('toSessionView', 1, gameInfo);
         },
         sendInvite : function(username, gameId) {
             this.invite.emit('send', username, gameId);

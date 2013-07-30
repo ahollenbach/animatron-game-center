@@ -170,7 +170,7 @@ body {
 #message-box textarea {
     margin-top:.5em;
     width: 95%;
-    height:250px; 
+    height:250px;
     resize: none;
     font-family: 'Open Sans', sans-serif;
 }
@@ -395,6 +395,12 @@ ul#user-list  {
     border: 2px solid black;
 }
 
+/*=======================================================*/
+/* Settings
+/*=======================================================*/
+div.settings {
+    font-size: 1.3em;
+}
 
 /*=======================================================*/
 /* Buttons!

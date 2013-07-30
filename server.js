@@ -23,7 +23,8 @@ process.on('exit', function() {
 var mongoose = require('mongoose');
 
 // Connect to database
-mongoose.connect('mongodb://gamez.animatron.com:27017/gamecenter');
+mongoose.connect('mongodb://192.168.40.73:27017/gamecenter');
+//mongoose.connect('mongodb://gamez.animatron.com:27017/gamecenter');  //TODO: set up mongo to work with outside apps
 
 mongoose.connection.on('error', function (err) {
     log.error(err);

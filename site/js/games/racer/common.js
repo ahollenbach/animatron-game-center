@@ -1,44 +1,36 @@
 define([], function () {
-var common = {};
-
+var Common;
 
 //=============================================================================
 // Game Variables
 //=============================================================================
-common = {
-  fps            : 60,                      // how many 'update' frames per second
+Common = {
+  fps            : 60,                      // target frames per second
   drawDistance   : 300,                     // number of segments to draw
   roadWidth      : 2000,                    // actually half the roads width, easier math if the road spans from -roadWidth to +roadWidth
   segmentLength  : 200,                     // length of a single segment
   rumbleLength   : 3,                       // number of segments per red/white rumble strip
-  numLaps        : 3,
-  numRacers      : 8,
-  playerSegment  : {},
+  numLaps        : 3,                       // number of laps in the race. Can be changed through GUI
+  numRacers      : 8,                       // number of racers in the race. change through GUI
+  playerSegment  : {},                      // the current segment with the player in it
   segments       : [],                      // array of road segments
   cars           : [],                      // array of cars on the road
   trackLength    : null,                    // z length of entire track (computed)
   lanes          : 3,                       // number of lanes
   centrifugal    : 4,                       // The centrifugal force going around turns
-  raceActive     : false,
-  input          : {
-      keyLeft        : false,
-      keyRight       : false,
-      keyFaster      : false,
-      keySlower      : false,
-      keyDrift       : false
-  }
-}
-common.step         = 1/common.fps;                          // how long is each frame (in seconds)
-common.maxSpeed     = common.segmentLength/common.step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
-common.accel        =  common.maxSpeed/5;                    // acceleration rate - tuned until it 'felt' right
-common.breaking     = -common.maxSpeed;                      // deceleration rate when braking
-common.decel        = -common.maxSpeed/5;                    // 'natural' deceleration rate when neither accelerating, nor braking
-common.offRoadDecel = -common.maxSpeed/2;                    // off road deceleration is somewhere in between
-common.offRoadLimit =  common.maxSpeed/4;                    // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
+  raceActive     : false
+};
+Common.step         = 1/Common.fps;                          // how long is each frame (in seconds)
+Common.maxSpeed     = Common.segmentLength/Common.step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
+Common.accel        =  Common.maxSpeed/5;                    // acceleration rate - tuned until it 'felt' right
+Common.breaking     = -Common.maxSpeed;                      // deceleration rate when braking
+Common.decel        = -Common.maxSpeed/5;                    // 'natural' deceleration rate when neither accelerating, nor braking
+Common.offRoadDecel = -Common.maxSpeed/2;                    // off road deceleration is somewhere in between
+Common.offRoadLimit =  Common.maxSpeed/4;                    // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
 
 
 // CAR REFERENCE, all cars on the road should have a .car attribute with this object.
-// Make sure to use jQuery.extend(true, {}, common.carDefault) or your values will be global!
+// Make sure to use jQuery.extend(true, {}, Common.carDefault) or your values will be global!
 
 
 
@@ -51,8 +43,8 @@ const COLORS = {
   FOG:  '#005108',
   LIGHT:  { road: '#6B6B6B', grass: '#10AA10', rumble: '#555555', lane: '#CCCCCC'  },
   DARK:   { road: '#696969', grass: '#009A00', rumble: '#BBBBBB'                   },
-  START:  { road: 'white',   grass: 'white',   rumble: 'white'                     },
-  FINISH: { road: 'black',   grass: 'black',   rumble: 'black'                     }
+  START:  { road: 'white',   grass: '#009A00',   rumble: 'white'                   },
+  FINISH: { road: 'black',   grass: '#009A00',   rumble: 'black'                   }
 };
 
 const BACKGROUND = {
@@ -102,21 +94,19 @@ const SPRITES = {
     TREE2: { x:  274 , y:  5524 , w:  526 , h:  706  }
 };
 
-SPRITES.SCALE = .3 * (1/SPRITES.CAR_STRAIGHT.w) // the reference sprite width should be 1/3rd the (half-)roadWidth
+SPRITES.SCALE = .3 * (1/SPRITES.CAR_STRAIGHT.w); // the reference sprite width should be 1/3rd the roadWidth
 
 SPRITES.CAR_ORIENT = [[ SPRITES.CAR_DRIFT_LEFT_DOWN, SPRITES.CAR_LEFT_2_DOWN, SPRITES.CAR_LEFT_DOWN,  SPRITES.CAR_STRAIGHT_DOWN, SPRITES.CAR_RIGHT_DOWN, SPRITES.CAR_RIGHT_2_DOWN, SPRITES.CAR_DRIFT_RIGHT_DOWN],
                       [ SPRITES.CAR_DRIFT_LEFT,      SPRITES.CAR_LEFT_2   ,   SPRITES.CAR_LEFT   ,    SPRITES.CAR_STRAIGHT   ,   SPRITES.CAR_RIGHT   ,   SPRITES.CAR_RIGHT_2   ,   SPRITES.CAR_DRIFT_RIGHT],
                       [ SPRITES.CAR_DRIFT_LEFT_UP,   SPRITES.CAR_LEFT_2_UP,   SPRITES.CAR_LEFT_UP,    SPRITES.CAR_STRAIGHT_UP,   SPRITES.CAR_RIGHT_UP,   SPRITES.CAR_RIGHT_2_UP,   SPRITES.CAR_DRIFT_RIGHT_UP]];
 
-//SPRITES.BILLBOARDS = [SPRITES.BILLBOARD01, SPRITES.BILLBOARD02, SPRITES.BILLBOARD03, SPRITES.BILLBOARD04, SPRITES.BILLBOARD05, SPRITES.BILLBOARD06, SPRITES.BILLBOARD07, SPRITES.BILLBOARD08, SPRITES.BILLBOARD09];
 SPRITES.BILLBOARDS = [SPRITES.BILLBOARD];
 SPRITES.PLANTS     = [SPRITES.TREE1, SPRITES.TREE2, SPRITES.DEAD_TREE1, SPRITES.DEAD_TREE2, SPRITES.PALM_TREE, SPRITES.BUSH1, SPRITES.BUSH2, SPRITES.CACTUS, SPRITES.STUMP, SPRITES.BOULDER1, SPRITES.BOULDER2, SPRITES.BOULDER3];
-//SPRITES.CARS       = [SPRITES.CAR01, SPRITES.CAR02, SPRITES.CAR03, SPRITES.CAR04, SPRITES.SEMI, SPRITES.TRUCK];
 SPRITES.CARS       = [SPRITES.CAR_STRAIGHT];
 
-common.COLORS      = COLORS;
-common.BACKGROUND  = BACKGROUND;
-common.SPRITES     = SPRITES;
+Common.COLORS      = COLORS;
+Common.BACKGROUND  = BACKGROUND;
+Common.SPRITES     = SPRITES;
 
-return common;
+return Common;
 });

@@ -80,6 +80,21 @@
 </script>
 
 <script id="settings-template" type="text/x-handlebars-template">
+    <div class="duration setting">
+        Duration: <select>
+                    {{#each settings.duration.byPoints}}
+                        <option value="{{this}}">{{this}}</option>
+                    {{/each}}
+                  </select>
+    </div>
+    <div class="ai setting">
+        AI (temporary): <select>
+                    {{#each ai}}
+                        <option value="{{this.file}}">{{this.name}}</option>
+                    {{/each}}
+                  </select>
+    </div>
+    <br />
     <button id="start">START</button>
 </script>
 

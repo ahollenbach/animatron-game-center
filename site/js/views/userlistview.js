@@ -40,7 +40,6 @@ var UserListView = Backbone.View.extend({
     },
     render : function(evt) {
         if(evt.attributes && evt.attributes.maxPlayers) this.attributes = evt.attributes;
-        console.log(this.attributes)
         this.$el.html(this.template(this.attributes)); //add num player select
         //else $('#user-list').html("");
         this.collection.each(function(user) { // then players?
@@ -110,8 +109,8 @@ var UserListView = Backbone.View.extend({
             console.log(user);
         }
     },
-    finalizePlayers : function(modelJSON) {
-        globalEvents.trigger("gameLaunchEvent", modelJSON, this.acceptedUsers);
+    finalizePlayers : function(json) {
+        globalEvents.trigger("gameLaunchEvent", json, this.acceptedUsers);
     },
 
     illuminateIcon : function(elm) {

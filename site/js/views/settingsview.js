@@ -19,6 +19,15 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
             'click button#start': 'launchGame',
         },
         launchGame : function(evt) {
+            modelJSON.settings = {
+                duration : {
+                    type: 'point',
+                    cond: $('.duration select').val()
+                }
+            }
+            modelJSON.ai = {
+                name : $('.ai select').val()
+            }
             globalEvents.trigger('finalizePlayers', modelJSON);
         },
         setView : function(evt) {

@@ -10,22 +10,25 @@ define(['backbone'], function (Backbone) {
                 duration: {
                     timed    : [1,2,3,4,5],
                     byPoints : [5,10,15,20]
-                },
-                ai: {
-                    perfect: {
-                        difficulty: 10,
-                        file: "game/ai/perfect.js"
-                    },
-                    mediocre: {
-                        difficulty: 3,
-                        file: "game/ai/mediocre.js"
-                    },
-                    you: {
-                        difficulty: 1,
-                        file: "game/ai/you.js"
-                    }
                 }
-            }
+            },
+            ai: [
+                {
+                    name : "Perfect",
+                    difficulty: 10,
+                    file: "perfect.js"
+                },
+                {
+                    name : "Mediocre",
+                    difficulty: 3,
+                    file: "mediocre.js"
+                },
+                {
+                    name : "You!",
+                    difficulty: 1,
+                    file: "you.js"
+                }
+            ]
         }
     });
 
