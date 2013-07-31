@@ -174,7 +174,7 @@ var GameSessionList = (function() {
         };
 
         this.processState = function(id, playerId, state) {
-            gameSessions[id].game.updateState(playerId, state);
+            gameSessions[id].game.serverHandleInput(playerId, state);
         };
 
         this.toString = function() {
@@ -192,6 +192,9 @@ var GameSessionList = (function() {
 //=============================================================================
 // Actual Server Stuff
 //=============================================================================
+var cliArgs = process.argv.splice(2);
+var silent = ~cliArgs.indexOf("silent");
+
 // Module dependencies.
 var express = require( 'express' ), //Web framework
     path = require( 'path' ); //Utilities for dealing with file paths
@@ -311,6 +314,11 @@ app.put('/api/users/:id', function(request, response) {
 // As a convention, I am use single quotes for event types and double quotes
 // for any other type of string
 //=============================================================================
+if (silent) {
+    io.set('log level', 0);
+    io.disable('heartbeat');
+}
+
 var chat   = io.of("/chat"),
     invite = io.of("/invite"),
     game   = io.of("/game");
@@ -320,6 +328,7 @@ io.on('connection', function(socket) {
     socket.on('disconnect', function() {
         socket.get("username", function(error, username) {
             if (!error) {
+                // gameSessions.removeGameSession(onlineUsers.getGameId(username));
                 onlineUsers.remove(username);
                 console.log(username + " has disconnected");
 
@@ -392,13 +401,17 @@ game.on('connection', function(socket) {
             players.splice(0, 0, username);
             var id = gameSessions.addGameSession(gameData.name, players);
 
-            players.forEach(function(player) {
+            players.forEach(function(player, index) {
                 onlineUsers.setGameId(player, id);
                 var socketId = onlineUsers.getId(player);
                 game.socket(socketId).join(id);
-            });
 
-            game.in(id).emit('load', gameData);
+                var data = gameData;
+                data.playerNumber = index;
+                game.socket(socketId).emit('load', data);
+            });
+            
+            // game.in(id).emit('load', gameData);
         });
     });
 

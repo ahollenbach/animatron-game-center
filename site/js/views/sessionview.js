@@ -23,7 +23,7 @@ define(['backbone', 'handlebars'], function (Backbone, Handlebars) {
             // Add the game to the canvas
             var gameName = gameInfo.name.toLowerCase(); // 'games/' + gameName + "/" + gameName + '.js'
             require(['games/pong/pong_core'], function(Pong) {
-                var p = new Pong();
+                var p = new Pong({ playerNumber : gameInfo.playerNumber });
                 p.setViewport(document.getElementById("game-canvas"));
                 // pong.initGame(gameMode, "perfectAI.js",gameInfo.duration);
             });
