@@ -1,12 +1,12 @@
 require.config({
     baseUrl: "js/",
     paths: {
-        jquery     : 'libs/jquery-1.9.1',
+        jquery     : 'libs/jquery-1.10.2',
         underscore : 'libs/underscore',
         backbone   : 'libs/backbone',
         handlebars : 'libs/handlebars',
-        socketio   : 'libs/socket.io.min',
-        moment     : 'libs/moment.min',
+        socketio   : 'libs/socket.io',
+        moment     : 'libs/moment',
         jqueryui   : 'libs/jquery-ui'    },
     shim: {
         underscore: {

@@ -79,6 +79,7 @@ var Game = {
             });
 
             var scene = buildScene();
+            console.log(scene)
 
             var racer = createPlayer(canvas.id, {
                 //"debug": true,
