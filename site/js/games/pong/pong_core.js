@@ -168,12 +168,16 @@ var Paddle = (function() {
 		this.element = b('paddle' + paddleId)
 			.rect([this.x, this.startY], [this.width, this.height])
 				.fill(COLORS[paddleId - 1]);
+		this.updateElementData();
 		this.element.v.reactAs(
 			Builder.path([
 				[(paddleId == 1 ? 1 : -1) * this.width / 2, -this.height / 2],
 				[(paddleId == 1 ? 1 : -1) * this.width / 2, this.height / 2]
 			])
 		);
+		this.element.modify(function(t) {
+			this.y = this.$.data().y;
+		});
 		paddleId++;
 
 		// Public functions
@@ -192,10 +196,13 @@ var Paddle = (function() {
 		updatePosition : function(mouseY) {
 			this.y = Util.clamp(this.convertY(mouseY), this.minY, this.maxY);
 
+			this.updateElementData();			
+		},
+		updateElementData : function() {
 			this.element.data({
 				y : this.y
 			});
-		},
+		}
 	};
 
 	return c;
@@ -228,10 +235,16 @@ var GamePlayer = (function() {
 		// TODO: Fix this constructor
 		var paddle = new Paddle(this.game.world);		
 
-		this.setX = function(value) { paddle.x = value; };
+		this.setX = function(value) { 
+			paddle.x = value;
+			paddle.updateElementData();
+		};
 		this.getX = function() { return paddle.x; };
 
-		this.setY = function(value) { paddle.y = value; };
+		this.setY = function(value) { 
+			paddle.y = value; 
+			paddle.updateElementData(); 
+		};
 		this.getY = function() { return paddle.y; };
 
 		this.getElement = function() { return paddle.element; };
@@ -325,6 +338,7 @@ var PongCore = (function() {
 		console.log("before: ", this.players.one.getX(), this.players.two.getX());
 
 		this.players.one.setX(100);
+		this.players.one.setY(45);
 		this.players.two.setX(300);
 
 		console.log("after: ", this.players.one.getX(), this.players.two.getX());
