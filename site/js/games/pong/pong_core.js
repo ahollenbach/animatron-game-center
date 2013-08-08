@@ -61,7 +61,7 @@ var Puck = (function() {
 
 		// Public functions
 		this.getElement = function() { return element; };
-		this.getElementState = function() { return elemenet.v; };
+		this.getElementState = function() { return element.v; };
 		this.updateElementData = function() {
 			element.data({
 				x : this.x,
@@ -365,6 +365,13 @@ var PongCore = (function() {
 		// TODO: Fix constructor
 		this.puck = new Puck(this.world.halfWidth, this.world.halfHeight, 14, this.world);
 
+		this.players.one.getElementState().collides(this.puck.getElementState(), function() {
+			this.puck.bounce(Direction.LEFT);
+		});
+		this.players.two.getElementState().collides(this.puck.getElementState(), function(){
+			this.puck.bounce(Direction.RIGHT);
+		});	
+
 		this.lastScoreTime = 0;
 
 		this.step = 1 / 60;
@@ -584,10 +591,10 @@ var PongCore = (function() {
 				this.handleScore(scoringPlayer == 1 ? this.players.one.userid : this.players.two.userid);
 			} else {
 				// Check for collisions with puck using "collides"
-				this.players.one.getElementState().collides(this.puck.element.v, function() {
+				this.players.one.getElementState().collides(this.puck.getElementState(), function() {
 					this.puck.bounce(Direction.LEFT);
 				});
-				this.players.two.getElementState().collides(this.puck.element.v, function(){
+				this.players.two.getElementState().collides(this.puck.getElementState(), function(){
 					this.puck.bounce(Direction.RIGHT);
 				});
 			}
